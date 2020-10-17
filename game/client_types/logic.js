@@ -29,7 +29,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     });
 
-    stager.extendStep('game', {
+    /*stager.extendStep('game', {
         matcher: {
             roles: [ 'DICTATOR', 'OBSERVER' ],
             match: 'round_robin',
@@ -66,7 +66,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             // Save data in the data/roomXXX directory.
             node.game.memory.save('data.json');
         }
-    });
+    });*/
 
     stager.setOnGameOver(function() {
         // Something to do.

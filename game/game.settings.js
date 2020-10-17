@@ -61,8 +61,14 @@ module.exports = {
         pressure: {
             description: "Short times to take decisions",
             bidTime: 10000
-        }
+        },
 
+        //new treatments
+        rich: {
+            description: "Wealthy",
+            coins: 1000,
+            TEXT: "you are rich now"
+        },
 
     }
 };

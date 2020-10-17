@@ -13,7 +13,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.node.timer.randomDone();
     });
 
-    stager.extendStep('game', {
+    /*stager.extendStep('game', {
         roles: {
             DICTATOR: {
                 cb: function() {
@@ -44,7 +44,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 }
             }
         }
-    });
+    });*/
 
 
 };

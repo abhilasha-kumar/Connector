@@ -1,6 +1,15 @@
 #container {
   margin: 0 auto;
-  max-width: 42em; 
+  max-width: 42em;
   font-size: 20px;
 }
-
+table, th, td {
+border: 1px solid lightblue;
+}
+th {
+  width: 25%;
+  height: 100px;
+}
+th {
+  text-align: center;
+}

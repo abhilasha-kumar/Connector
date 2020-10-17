@@ -45,7 +45,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         frame: 'instructions.htm'
     });
 
-    stager.extendStep('game', {
+    /*stager.extendStep('game', {
         donebutton: false,
         frame: 'game.htm',
         roles: {
@@ -112,6 +112,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             }
         }
     });
+    */
 
     stager.extendStep('end', {
         donebutton: false,
