@@ -55,7 +55,7 @@ module.exports = {
 
         standard: {
             description: "Longer time",
-            bidTime: 20000
+            bidTime: 30000
         },
 
         pressure: {
