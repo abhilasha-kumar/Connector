@@ -41,6 +41,29 @@ module.exports = {
     // cheating, re-set the dictator's offer to this value.
     defaultOffer: 100,
 
+    testingTxt: "This is to test variables",
+
+
+    b0txt : "a0",
+    b1txt : "a1",
+    b2txt : "a2",
+    b3txt : "a3",
+    b4txt : "a4",
+    b5txt : "b0",
+    b6txt : "b1",
+    b7txt : "b2",
+    b8txt : "b3",
+    b9txt : "b4",
+    b10txt : "c0",
+    b11txt : "c1",
+    b12txt : "c2",
+    b13txt : "c3",
+    b14txt : "c4",
+    b15txt : "d0",
+    b16txt : "d1",
+    b17txt : "d2",
+    b18txt : "d3",
+    b19txt : "d4",
 
 
     // # Treatments definition.

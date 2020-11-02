@@ -41,8 +41,32 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // this.debugInfo = node.widgets.append('DebugInfo', header)
     });
 
+    console.log("hello");
+
     stager.extendStep('instructions', {
-        frame: 'instructions.htm'
+        frame: 'instructions.htm',
+        cb: function() {
+                    console.log('I am the step callback.');
+                    console.log('I decide when terminate this step!');
+                    // The user clicks a button with id "read" when he/she finished
+                    // reading the instructions page and we proceed to the next step.
+                    /*var button0 = W.gid('b0');
+                    button0.onclick = function() {
+                        var myDiv = W.getElementById("glist")
+                        myDiv.innerHTML = myDiv.innerHTML+ button0.innerHTML+", ";
+                        node.set({buttonpress : button0.innerHTML})
+                    };*/
+                    var el = W.getElementById("brd");
+                    el.addEventListener('click', function (e){
+                        var target = e.target;
+                        var myDiv = W.getElementById("glist")
+                        myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
+
+                    });
+
+
+
+                }
     });
 
     /*stager.extendStep('game', {

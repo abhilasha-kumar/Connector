@@ -16,7 +16,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     var node = gameRoom.node;
     var channel =  gameRoom.channel;
-
     // Must implement the stages here.
 
     stager.setOnInit(function() {
