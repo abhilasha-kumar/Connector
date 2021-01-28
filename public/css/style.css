@@ -10,25 +10,30 @@
 
 table, th, td {
 border: 1px solid lightblue;
+margin-left: auto;
+margin-right: auto;
+
 }
 th {
   width: 25%;
-  height: 100px;
-}
-th {
+  height: 60px;
+  font-size: 20px;
   text-align: center;
+  color: black;
+  font-weight: normal;
 }
 .button {
-  border: none;
-  color: white;
+  border: transparent;
+  background-color: transparent;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 16px;
+  font-size: 20px;
   width: 100%;
-  height: 100px;
+  height: 100%;
   transition-duration: 0.4s;
   cursor: pointer;
+  outline:transparent;
 }
 
 .button1 {
@@ -39,4 +44,10 @@ th {
 .button1:hover {
   background-color: grey;
   color: white;
+}
+
+.consentDiv {
+  text-align: center;
+  font-size: 22px;
+  color: black;
 }
