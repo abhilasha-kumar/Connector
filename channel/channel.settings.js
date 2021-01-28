@@ -133,6 +133,8 @@ module.exports = {
      * Default: FALSE
      */
     enableReconnections: true,
+    sameStepReconnectionOnly: true,
+    disposeFailedReconnections: true,
 
     /**
      * ### sameStepReconnectionOnly (boolean) Optional

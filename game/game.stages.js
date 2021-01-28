@@ -10,13 +10,22 @@
  */
 
 module.exports = function(stager, settings) {
-
-     stager
-        .next('instructions')
-        //.next('board')
-        .next('end')
-        .gameover();
-
+    stager.stage('consent');
+    stager.stage('idGet');
+    stager.stage('instructions');
+    stager.loopStage('gameplay', function() {
+   // Returns true for executing one more iteration of the loop.
+   return !this.LOOP_ENDED;
+});
+    //stager.repeatStage('gameplay',3);
+    stager.step('clueOptions');
+    stager.step('clueFinal');
+    stager.step('guessOptions');
+    stager.step('guessFinal');
+    stager.step('feedback');
+    stager.stage('demographics');
+    stager.stage('end');
+    stager.gameover();
 
     // Modify the stager to skip one stage.
     // stager.skip('instructions');
