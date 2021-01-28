@@ -118,6 +118,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.pair54 = ["FROG","CROAK"];
         this.pair55 = ["JUICE","JUNK"];
         this.pair56 = ["SPIDER","JOIN"];
+        this.cluespast = [];
 
         this.pairList = [this.pair0,this.pair1,this.pair2,this.pair3,this.pair4,this.pair5,this.pair6,this.pair7,this.pair8,this.pair9,this.pair10,this.pair11,this.pair12,this.pair13,this.pair14,this.pair15,this.pair16,this.pair17,this.pair18,this.pair19,this.pair20,this.pair21,this.pair22,this.pair23,this.pair24,this.pair25,this.pair26,this.pair27,this.pair28,this.pair29,this.pair30,this.pair31,this.pair32,this.pair33,this.pair34,this.pair35,this.pair36,this.pair37,this.pair38,this.pair39,this.pair40,this.pair41,this.pair42,this.pair43,this.pair44,this.pair45,this.pair46,this.pair47,this.pair48,this.pair49,this.pair50,this.pair51,this.pair52,this.pair53,this.pair54,this.pair55,this.pair56];
 
@@ -388,11 +389,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    });
                 },
                 done: function() {//send clue to other player and clue and time info to database
+                    this.cluespast.push(this.clueGive2.getValues().value);
+
                     node.say('CLUE', node.game.partner, this.clueGive2.getValues().value);
 
                     node.set({clueFinal : this.clueGive2.getValues().value});
                     node.set({TBFinal : this.clueGive2.getValues().timeBegin});
                     node.set({TEFinal : this.clueGive2.getValues().timeEnd});
+
                     return;
                 }
 
@@ -432,6 +436,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     that = this;
                     node.on.data('CLUE', function(msg) {
                         that.clueReceived = msg.data;
+                        this.cluespast.push(that.clueReceived);
                         node.done();
                     });
                 },
@@ -511,6 +516,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
 
                     W.setInnerHTML('clue', this.clueReceived);//show clue given by other player
+                    if(this.smallRoundCounter>0){
+                        W.setInnerHTML('cluepast0txt', "Your first clue was ")
+                        W.setInnerHTML('cluepast0', this.cluespast[0]);
+                    }
+                    if(this.smallRoundCounter>1){
+                        W.setInnerHTML('cluepast1txt', "Your second clue was ")
+                        W.setInnerHTML('cluepast1', this.cluespast[1]);
+                    }
+
                     var el = W.getElementById("gbrd");
                     this.clicker = function (e){//add event listener to record button presses of game board
                         var target = e.target;
@@ -715,6 +729,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         myDiv3.innerHTML = "";
                         this.roundCounter += 1;
+                        var j;
+                        for(j=0; j < this.smallRoundCounter; j++){
+                            this.cluespast.pop();
+                        }
                         this.smallRoundCounter = 0;
                         if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
                             node.say('END_GAME', 'SERVER', true);
@@ -725,6 +743,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
                         myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         this.roundCounter += 1;
+                        var j;
+                        for(j=0; j < this.smallRoundCounter; j++){
+                            this.cluespast.pop();
+                        }
                         this.smallRoundCounter = 0;
                         if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
                             node.say('END_GAME', 'SERVER', true);
@@ -752,6 +774,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         myDiv3.innerHTML = "";
                         this.roundCounter += 1;
+                        var j;
+                        for(j=0; j < this.smallRoundCounter; j++){
+                            this.cluespast.pop();
+                        }
                         this.smallRoundCounter = 0;
                         if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
                             node.say('END_GAME', 'SERVER', true);
@@ -762,6 +788,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
                         myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         this.roundCounter += 1;
+                        var j;
+                        for(j=0; j < this.smallRoundCounter; j++){
+                            this.cluespast.pop();
+                        }
                         this.smallRoundCounter = 0;
                         if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
                             node.say('END_GAME', 'SERVER', true);
