@@ -51,3 +51,11 @@ th {
   font-size: 22px;
   color: black;
 }
+
+.btn-copy{
+    background-color: white;
+    color: black;
+}
+.btn-copy:focus{
+    background-color: LimeGreen;
+}

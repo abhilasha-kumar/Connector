@@ -13,6 +13,17 @@ module.exports = function(stager, settings) {
     stager.stage('consent');
     stager.stage('idGet');
     stager.stage('instructions');
+    stager.loopStage('gameplayprac', function() {
+   // Returns true for executing one more iteration of the loop.
+   return !this.LOOP_ENDED_PRAC;
+});
+    //stager.repeatStage('gameplay',3);
+    stager.step('clueOptionsprac');
+    stager.step('clueFinalprac');
+    stager.step('guessOptionsprac');
+    stager.step('guessFinalprac');
+    stager.step('feedbackprac');
+    stager.stage('endprac');
     stager.loopStage('gameplay', function() {
    // Returns true for executing one more iteration of the loop.
    return !this.LOOP_ENDED;
