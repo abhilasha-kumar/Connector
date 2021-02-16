@@ -124,7 +124,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         this.roundCounter = 0;//iterated value to move through the word pairs
         this.smallRoundCounter = 0;//iterated value to record the 3 trials for each word pair
-        this.pairnumber = 2;//the number of pairs in the total experiment, should be 57
+        this.pairnumber = 46;//the number of pairs in the total experiment, should be 57
+        this.pracpairnumber=3;
         this.optionTimeArray = [0];
         this.id;
         this.randomCode;
@@ -133,15 +134,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     stager.extendStep('consent', {
         frame: 'consent.htm',
+        donebutton: false,
         cb: function(){
-            this.consentButton = node.widgets.append('ChoiceTable', W.gid('consentText'), {//apend customInput widget with 1 mandatory input
-               id: 'consentbox',
-               title: false,
-               requiredChoice: true,
-               choices: [
-                   "I agree to take part in this study."
-               ]
-           });
+            var a = W.gid('agree');
+            a.onclick = function() { node.game.doneButton.enable() };
        }
     });
 
@@ -178,6 +174,707 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     });
 
+
+
+
+
+    stager.extendStep('clueOptionsprac', {
+        role: function() { return this.role; },//This code is repeated to maintain roles throughout steps of experiment
+        partner: function() { return this.partner; },
+
+        roles: {
+            CLUEGIVER:{
+                frame: 'clueboard.htm',
+                init: function() {
+                    node.game.clueReceived = null;
+                },
+                cb: function() {
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),//Initialize board with values from our array each round
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+                    this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
+                    W.setInnerHTML('trgtWords', this.pairList[this.roundCounter][this.randomOrder] + " and " + this.pairList[this.roundCounter][1-this.randomOrder]);
+                    node.set({target1: this.pairList[this.roundCounter][this.randomOrder]});
+                    node.set({target2: this.pairList[this.roundCounter][1-this.randomOrder]});
+
+                    var validation = function(value) {
+                        var res;
+                        res = { value: value };
+                        if (value.trim() == '' && this.requiredChoice) {
+                            res.err = this.getText('emptyErr');
+                            return res;
+                        }
+                        // Custom validation (only reports about last word).
+                        value.split(" ").forEach(function(t) {
+                            if (J.inArray(t, ["word1", "word2", "word3"])) {
+                                res.err = 'You have used a forbidden word: ' + t;
+                            }
+                        });
+                        return res;
+                    };
+
+                    this.cluesGive = node.widgets.append('CustomInputGroup', W.gid('containerbottom'), {//create customInputGroup widget for clue options, only the first is mandatory
+                       validation: validation,
+                       id: 'cluesGive',
+                       orientation: 'H',
+                       required: true,
+
+
+                       //mainText: 'Please list possible clues.',
+                       sharedOptions: {
+                          type: 'text',
+                          width: '80%'
+                       },
+                       items: [
+                           {
+                               id: 'clue1',
+                               mainText: 'Option 1',
+                               requiredChoice: true
+                           },
+                           {
+                               id: 'clue2',
+                               mainText: 'Option 2',
+                               requiredChoice: true
+                           },
+                           {
+                               id: 'clue3',
+                               mainText: 'Option 3',
+                               requiredChoice: true
+                           },
+                           {
+                               id: 'clue4',
+                               mainText: 'Option 4'
+                           },
+                           {
+                               id: 'clue5',
+                               mainText: 'Option 5'
+                           },
+                           {
+                               id: 'clue6',
+                               mainText: 'Option 6'
+                           },
+                           {
+                               id: 'clue7',
+                               mainText: 'Option 7'
+                           },
+                           {
+                               id: 'clue8',
+                               mainText: 'Option 8'
+                           }
+                       ]
+
+                   });
+                },
+                done: function() {//this sens all data to the logic client and stores the values
+                    node.set({clueGiverID: this.id}),
+                    node.set({clueGiverRandCode: this.randomCode}),
+
+
+
+
+                    node.set({clueOption1 : this.cluesGive.getValues().items['clue1'].value}),
+                    node.set({TBOption1 : this.cluesGive.getValues().items['clue1'].timeBegin}),
+                    node.set({TEOption1 : this.cluesGive.getValues().items['clue1'].timeEnd}),
+
+                    node.set({clueOption2 : this.cluesGive.getValues().items['clue2'].value}),
+                    node.set({TBOption2 : this.cluesGive.getValues().items['clue2'].timeBegin}),
+                    node.set({TEOption2 : this.cluesGive.getValues().items['clue2'].timeEnd}),
+
+                    node.set({clueOption3 : this.cluesGive.getValues().items['clue3'].value}),
+                    node.set({TBOption3 : this.cluesGive.getValues().items['clue3'].timeBegin}),
+                    node.set({TEOption3 : this.cluesGive.getValues().items['clue3'].timeEnd}),
+
+                    node.set({clueOption4 : this.cluesGive.getValues().items['clue4'].value}),
+                    node.set({TBOption4 : this.cluesGive.getValues().items['clue4'].timeBegin}),
+                    node.set({TEOption4 : this.cluesGive.getValues().items['clue4'].timeEnd}),
+
+                    node.set({clueOption5 : this.cluesGive.getValues().items['clue5'].value}),
+                    node.set({TBOption5 : this.cluesGive.getValues().items['clue5'].timeBegin}),
+                    node.set({TEOption5 : this.cluesGive.getValues().items['clue5'].timeEnd}),
+
+                    node.set({clueOption6 : this.cluesGive.getValues().items['clue6'].value}),
+                    node.set({TBOption6 : this.cluesGive.getValues().items['clue6'].timeBegin}),
+                    node.set({TEOption6 : this.cluesGive.getValues().items['clue6'].timeEnd}),
+
+                    node.set({clueOption7 : this.cluesGive.getValues().items['clue7'].value}),
+                    node.set({TBOption7 : this.cluesGive.getValues().items['clue7'].timeBegin}),
+                    node.set({TEOption7 : this.cluesGive.getValues().items['clue7'].timeEnd}),
+
+                    node.set({clueOption8 : this.cluesGive.getValues().items['clue8'].value}),
+                    node.set({TBOption8 : this.cluesGive.getValues().items['clue8'].timeBegin}),
+                    node.set({TEOption8 : this.cluesGive.getValues().items['clue8'].timeEnd}),
+
+                    node.say('CLUES', node.game.partner, this.cluesGive.getValues().items['clue1'].value);//this sends a signal to the other player so their step ends
+                    return;
+                }
+
+            },
+            GUESSER:{
+                init: function() {
+                    node.game.clueReceived = null;
+                },
+                donebutton: false,//disable done button so they cannot proceed without their partner finishing
+                frame: 'studyboard.htm',
+                cb: function() {//set the board for the guesser
+
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+
+                    var that;//this block forces the end of the step on receiving data
+                    if (this.clueReceived !== null) node.done();
+                    that = this;
+                    node.on.data('CLUES', function(msg) {
+                        that.clueReceived = msg.data;
+                        node.done();
+                    });
+                },
+                done: function() {
+                    node.set({guesserID: this.id});
+                    node.set({guesserRandCode: this.randomCode});
+                    return;
+                }
+            }
+        }
+    });
+
+    stager.extendStep('clueFinalprac', {
+        role: function() { return this.role; },
+        partner: function() { return this.partner; },
+        roles: {
+            CLUEGIVER:{
+                frame: 'clueboard.htm',
+                cb: function() {
+                    W.setInnerHTML('containerbottom2', "Please type your FINAL clue below and click Done:"),
+
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+
+                    this.clueGive2 = node.widgets.append('CustomInput', W.gid('containerbottom2'), {//apend customInput widget with 1 mandatory input
+                       id: 'clueGive',
+                       //mainText: 'What is your final clue?',
+                       type: 'text',
+                       className: 'centered',
+                       root: 'cbrd',
+                       requiredChoice: true
+                   });
+                },
+                done: function() {//send clue to other player and clue and time info to database
+                    this.cluespast.push(this.clueGive2.getValues().value);
+
+                    node.say('CLUE', node.game.partner, this.clueGive2.getValues().value);
+
+                    node.set({clueFinal : this.clueGive2.getValues().value});
+                    node.set({TBFinal : this.clueGive2.getValues().timeBegin});
+                    node.set({TEFinal : this.clueGive2.getValues().timeEnd});
+
+                    return;
+                }
+
+            },
+            GUESSER:{
+                init: function() {
+                    node.game.clueReceived = null;
+                },
+                donebutton: false,
+                frame: 'studyboard.htm',
+
+                cb: function() {
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+
+                    var that;//force proceed when clue is sent from other player
+                    if (this.clueReceived !== null) node.done();
+                    that = this;
+                    node.on.data('CLUE', function(msg) {
+                        that.clueReceived = msg.data;
+                        this.cluespast.push(that.clueReceived);
+                        node.done();
+                    });
+                },
+            }
+        }
+    });
+
+    stager.extendStep('guessOptionsprac', {
+        role: function() { return this.role; },
+        partner: function() { return this.partner; },
+        roles: {
+            CLUEGIVER:{
+                init: function() {
+                    node.game.guessesReceived = null;
+                },
+                donebutton: false,
+                frame: 'studyboardCG.htm',
+                cb: function() {
+
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+
+                    var that;//force proceed when guess is sent from other player
+                    if (this.guessesReceived !== null) node.done();
+                    that = this;
+                    node.on.data('GUESSES', function(msg) { node.done();
+                        that.guessesReceived = true;
+                        node.done();
+                    });
+
+
+                }
+            },
+            GUESSER:{
+                frame: 'guessesboard.htm',
+                donebutton: false,
+                cb: function() {
+
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+
+                    //W.setInnerHTML('clue', this.clueReceived);
+                    if(this.smallRoundCounter==0){//show clue given by other player
+                        W.setInnerHTML('cluepasttxt', "Your first clue is ");
+                        W.setInnerHTML('cluepast', this.clueReceived + ".");
+                    }
+                    if(this.smallRoundCounter==1){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue is ");
+                        W.setInnerHTML('cluepast0', this.clueReceived + ".");
+                    }
+                    if(this.smallRoundCounter==2){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue was ");
+                        W.setInnerHTML('cluepast0', this.cluespast[1] + ".");
+                        W.setInnerHTML('cluepast1txt', "Your third clue is ");
+                        W.setInnerHTML('cluepast1', this.clueReceived + ".");
+                    }
+
+                    var el = W.getElementById("gbrd");
+                    this.clicker = function (e){//add event listener to record button presses of game board
+                        var target = e.target;
+                        var myDiv = W.getElementById("glist");
+                        myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
+                        node.game.doneButton.enable();
+                        node.game.memory.add({
+                            player: node.player.id,
+                            stage: node.game.getCurrentGameStage(),
+                            GuessOptions: target.innerHTML,
+                            GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
+                            customTimeStamp: node.timer.getTimeSince('start')
+                        });
+                    },
+                    el.addEventListener('click', this.clicker);//add event listener
+                },
+                done: function() {//send signal for other player to end step, removes event listener so that these values cannot change
+                    var el = W.getElementById("gbrd");
+                    el.removeEventListener('click', this.clicker);
+                    node.say('GUESSES', node.game.partner);
+                    var memArray = node.game.memory.select('GuessOptions').and('customTimeStamp','!in', this.optionTimeArray).fetch();
+                    var i;
+
+                    for (i=0; i<memArray.length; i++) {//make into for loop with a bunch of if statements
+
+                        if(i == 0){
+                            node.set({GuessOption1 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION1_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+
+                        if(i == 1){
+                            node.set({GuessOption2 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION2_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+                        if(i == 2){
+                            node.set({GuessOption3 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION3_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+                        if(i == 3){
+                            node.set({GuessOption4 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION4_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+                        if(i == 4){
+                            node.set({GuessOption5 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION5_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+                        if(i == 5){
+                            node.set({GuessOption6 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION6_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+                        if(i == 6){
+                            node.set({GuessOption7 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION7_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+                        if(i == 7){
+                            node.set({GuessOption8 : memArray[i].GuessOptions});
+                            node.set({GUESS_OPTION8_TIME: memArray[i].GUESS_OPTIONS_TIME});
+                        }
+
+                        this.optionTimeArray.push(memArray[i].customTimeStamp);
+
+                    };
+                }
+            }
+        }
+    });
+
+    stager.extendStep('guessFinalprac', {
+        role: function() { return this.role; },
+        partner: function() { return this.partner; },
+        roles: {
+            CLUEGIVER:{
+                init: function() {
+                    node.game.guess1Received = null;
+                    node.game.guess2Received = null;
+                },
+                donebutton: false,
+                frame: 'studyboardCG.htm',
+                cb: function() {
+
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+
+                    var that;//receives two messages, one for each guessed word. ends after receiving the second one
+                    if (this.guess2Received !== null) node.done();
+                    that = this;
+                    node.on.data('GUESS1', function(msg) {
+                        that.guess1Received = msg.data;
+                    });
+                    node.on.data('GUESS2', function(msg) {
+                        that.guess2Received = msg.data;
+                        node.done();
+                    });
+                }
+            },
+            GUESSER:{
+                frame: 'guessesboard.htm',
+                donebutton: false,
+                cb: function() {
+                    W.setInnerHTML('clue2', "Please select your FINAL guesses." ),
+                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+
+                    this.answerCounter = 0;
+
+                    var el = W.getElementById("gbrd");
+
+
+                    this.clicker2 = function (e){//event listener that receives two words and then ends the step
+                        var target = e.target;
+                        var myDiv = W.getElementById("alist");
+
+                        if(myDiv.innerHTML == " Your final answers:  "){//the condition if no word has been added, stores the first word and sends it to the partner
+                            myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML;
+                            node.say('GUESS1', node.game.partner, target.innerHTML);
+                            node.set({GUESS_1_FINAL : target.innerHTML});
+                            node.set({GUESS_1_FINAL_TIME : node.timer.getTimeSince('step')})
+                            node.game.memory.add({//adds the responded values to memory so we can access it later, cannot store this info in a variable since it is in an event listener
+                                player: node.player.id,
+                                stage: node.game.getCurrentGameStage(),
+                                Guess1: target.innerHTML
+                            });
+                            node.game.memory.tag("guess1");//tag this memory for easy access later
+
+                        }
+                        else if(!myDiv.innerHTML.includes(",")) {//the condition if 1 word has been added, stores the second word, send it to the partner, and ends the step for both players
+                            myDiv.innerHTML = myDiv.innerHTML + ", " + target.innerHTML;
+                            node.say('GUESS2', node.game.partner, target.innerHTML);
+                            node.set({GUESS_2_FINAL : target.innerHTML});
+                            node.set({GUESS_2_FINAL_TIME : node.timer.getTimeSince('step')})
+                            node.game.memory.add({
+                                player: node.player.id,
+                                stage: node.game.getCurrentGameStage(),
+                                Guess2: target.innerHTML
+                            });
+                            node.game.memory.tag("guess2");
+                            el.removeEventListener('click', this.clicker2);
+                            node.done();
+
+                        };
+
+                    }
+                    el.addEventListener('click', this.clicker2);
+                },
+                done: function() {
+                    node.say('GUESS', node.game.partner);
+                }
+            }
+        }
+
+    });
+
+    stager.extendStep('feedbackprac', {//tells each player whether the guesser was successful
+        role: function() { return this.role; },
+        partner: function() { return this.partner; },
+
+        roles: {
+            CLUEGIVER:{
+                frame: 'feedbackCG.htm',
+                cb: function() {
+                    var myDiv = W.getElementById("cganswers");
+                    var myDiv2 = W.getElementById("cgcorrect");
+                    var myDiv3 = W.getElementById("cgnextstep");
+                    //var myDiv4 = W.getElementById("cgnextboard");
+                    if(this.pairList[this.roundCounter].includes(this.guess1Received)&&this.pairList[this.roundCounter].includes(this.guess2Received)){//if they were correct it ends the stage and moves on to the next word pair
+                        myDiv.innerHTML = "The Guesser responded with " + this.guess1Received + " and " + this.guess2Received + " which is CORRECT!";
+                        myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
+                        myDiv3.innerHTML = "";
+                        this.roundCounter += 1;
+                        var j;
+                        for(j=0; j < this.smallRoundCounter; j++){
+                            this.cluespast.pop();
+                        }
+                        this.smallRoundCounter = 0;
+                        if(this.roundcounter%3 == 0){
+                            myDiv2.innerHTML = "You will now move on to the next board. Please click Done.";
+                        }
+                        if(this.roundCounter == this.pracpairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
+                            node.say('END_GAME', 'SERVER', true);
+                        }
+                    }
+                    else if(this.smallRoundCounter == 2){//if this is the third trial the players did not get the word and we move to the next word pair
+                        myDiv.innerHTML = "The Guesser responded with " + this.guess1Received + " and " + this.guess2Received + " which is INCORRECT!";
+                        myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
+                        myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
+                        this.roundCounter += 1;
+                        var k;
+                        for(k=0; k < this.smallRoundCounter; k++){
+                            this.cluespast.pop();
+                        }
+                        this.smallRoundCounter = 0;
+                        if(this.roundcounter%3 == 0){
+                            myDiv3.innerHTML = "You will now move on to the next board. Please click Done.";
+                        }
+                        if(this.roundCounter == this.pracpairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
+                            node.say('END_GAME', 'SERVER', true);
+                        }
+                    }
+                    else{//if they are wrong and it isn't the third trial players get another chance
+                        myDiv.innerHTML = "The Guesser responded with " + this.guess1Received + " and " + this.guess2Received + " which is INCORRECT!";
+                        myDiv2.innerHTML = "You will now choose a different clue for the same word pair. Please click Done.";
+                        myDiv3.innerHTML = "";
+                        this.smallRoundCounter += 1;
+                    }
+                }
+            },
+            GUESSER:{
+                frame: 'feedbackGuesser.htm',
+                cb: function() {
+                    var guess1TXT = node.game.memory.resolveTag("guess1").Guess1;//use tags to get our response from memory and validate
+                    var guess2TXT = node.game.memory.resolveTag("guess2").Guess2;
+
+                    var myDiv = W.getElementById("ganswers");
+                    var myDiv2 = W.getElementById("gcorrect");
+                    var myDiv3 = W.getElementById("gnextstep");
+                    if(this.pairList[this.roundCounter].includes(guess1TXT)&&this.pairList[this.roundCounter].includes(guess2TXT)){//if they were correct it ends the stage and moves on to the next word pair
+                        myDiv.innerHTML = "You responded with " + guess1TXT + " and " + guess2TXT + " which is CORRECT!";
+                        myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
+                        myDiv3.innerHTML = "";
+                        this.roundCounter += 1;
+                        var j;
+                        for(j=0; j < this.smallRoundCounter; j++){
+                            this.cluespast.pop();
+                        }
+                        this.smallRoundCounter = 0;
+                        if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
+                            node.say('END_GAME', 'SERVER', true);
+                        }
+                    }
+                    else if(this.smallRoundCounter == 2){//if this is the third trial the players did not get the word and we move to the next word pair
+                        myDiv.innerHTML = "You responded with " + guess1TXT + " and " + guess2TXT + " which is INCORRECT!";
+                        myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
+                        myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
+                        this.roundCounter += 1;
+                        var l;
+                        for(l=0; l < this.smallRoundCounter; l++){
+                            this.cluespast.pop();
+                        }
+                        this.smallRoundCounter = 0;
+                        if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
+                            node.say('END_GAME', 'SERVER', true);
+                        }
+                    }
+                    else{//if they are wrong and it isn't the third trial players get another chance
+                        myDiv.innerHTML = "You responded with " + guess1TXT + " and " + guess2TXT + " which is INCORRECT!";
+                        myDiv2.innerHTML = "The Speaker will now choose a different clue for the same word pair. Please click Done.";
+                        myDiv3.innerHTML = "";
+                        this.smallRoundCounter += 1;
+                    }
+                }
+            }
+        }
+    });
+
+    stager.extendStep('endprac', {
+        role: function() { return this.role; },
+        partner: function() { return this.partner; },
+        roles: {
+            CLUEGIVER:{
+                frame: 'pracend.htm',
+            },
+            GUESSER:{
+                frame: 'pracend.htm',
+            }
+        }
+    });
+
+
+
+
+
+
+
+
+
+
     stager.extendStep('clueOptions', {
         role: function() { return this.role; },//This code is repeated to maintain roles throughout steps of experiment
         partner: function() { return this.partner; },
@@ -211,7 +908,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
                     this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
-                    W.setInnerHTML('trgtWords', this.pairList[this.roundCounter][this.randomOrder] + " " + this.pairList[this.roundCounter][1-this.randomOrder]);
+                    W.setInnerHTML('trgtWords', this.pairList[this.roundCounter][this.randomOrder] + " and " + this.pairList[this.roundCounter][1-this.randomOrder]);
+                    node.set({target1: this.pairList[this.roundCounter][this.randomOrder]});
+                    node.set({target2: this.pairList[this.roundCounter][1-this.randomOrder]});
 
                     this.cluesGive = node.widgets.append('CustomInputGroup', W.gid('containerbottom'), {//create customInputGroup widget for clue options, only the first is mandatory
                        id: 'cluesGive',
@@ -229,11 +928,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                            },
                            {
                                id: 'clue2',
-                               mainText: 'Option 2'
+                               mainText: 'Option 2',
+                               requiredChoice: true
                            },
                            {
                                id: 'clue3',
-                               mainText: 'Option 3'
+                               mainText: 'Option 3',
+                               requiredChoice: true
                            },
                            {
                                id: 'clue4',
@@ -491,6 +1192,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             },
             GUESSER:{
                 frame: 'guessesboard.htm',
+                doneButton: false,
                 cb: function() {
 
                     W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
@@ -515,14 +1217,23 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
 
-                    W.setInnerHTML('clue', this.clueReceived);//show clue given by other player
-                    if(this.smallRoundCounter>0){
-                        W.setInnerHTML('cluepast0txt', "Your first clue was ")
-                        W.setInnerHTML('cluepast0', this.cluespast[0]);
+                    if(this.smallRoundCounter==0){//show clue given by other player
+                        W.setInnerHTML('cluepasttxt', "Your first clue is ");
+                        W.setInnerHTML('cluepast', this.clueReceived + ".");
                     }
-                    if(this.smallRoundCounter>1){
-                        W.setInnerHTML('cluepast1txt', "Your second clue was ")
-                        W.setInnerHTML('cluepast1', this.cluespast[1]);
+                    if(this.smallRoundCounter==1){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue is ");
+                        W.setInnerHTML('cluepast0', this.clueReceived + ".");
+                    }
+                    if(this.smallRoundCounter==2){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue was ");
+                        W.setInnerHTML('cluepast0', this.cluespast[1] + ".");
+                        W.setInnerHTML('cluepast1txt', "Your third clue is ");
+                        W.setInnerHTML('cluepast1', this.clueReceived + ".");
                     }
 
                     var el = W.getElementById("gbrd");
@@ -530,6 +1241,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         var target = e.target;
                         var myDiv = W.getElementById("glist");
                         myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
+                        node.game.doneButton.enable();
                         node.game.memory.add({
                             player: node.player.id,
                             stage: node.game.getCurrentGameStage(),
@@ -729,11 +1441,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         myDiv3.innerHTML = "";
                         this.roundCounter += 1;
+                        if(this.roundcounter%3 == 0){
+                            myDiv2.innerHTML = "You will now move on to the next board. Please click Done.";
+                        }
                         var j;
                         for(j=0; j < this.smallRoundCounter; j++){
                             this.cluespast.pop();
                         }
                         this.smallRoundCounter = 0;
+
                         if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
                             node.say('END_GAME', 'SERVER', true);
                         }
@@ -743,11 +1459,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
                         myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         this.roundCounter += 1;
-                        var j;
-                        for(j=0; j < this.smallRoundCounter; j++){
+                        if(this.roundcounter%3 == 0){
+                            myDiv3.innerHTML = "You will now move on to the next board. Please click Done.";
+                        }
+                        var m;
+                        for(m=0; m < this.smallRoundCounter; m++){
                             this.cluespast.pop();
                         }
                         this.smallRoundCounter = 0;
+
                         if(this.roundCounter == this.pairnumber){//if the next value is equal to number of pairs then we are out of pairs and the experiment is over
                             node.say('END_GAME', 'SERVER', true);
                         }
@@ -774,6 +1494,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         myDiv3.innerHTML = "";
                         this.roundCounter += 1;
+                        if(this.roundcounter%3 == 0){
+                            myDiv2.innerHTML = "You will now move on to the next board. Please click Done.";
+                        }
                         var j;
                         for(j=0; j < this.smallRoundCounter; j++){
                             this.cluespast.pop();
@@ -788,8 +1511,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
                         myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         this.roundCounter += 1;
-                        var j;
-                        for(j=0; j < this.smallRoundCounter; j++){
+                        if(this.roundcounter%3 == 0){
+                            myDiv3.innerHTML = "You will now move on to the next board. Please click Done.";
+                        }
+                        var n;
+                        for(n=0; n < this.smallRoundCounter; n++){
                             this.cluespast.pop();
                         }
                         this.smallRoundCounter = 0;
@@ -832,7 +1558,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    },
                    {
                        id: 'education',
-                       type: 'text',
+                       type: 'int',
                        mainText: 'How many years of formal education have you had (consider graduating high school to be 12 years)?',
                        requiredChoice: true
 
@@ -861,7 +1587,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    {
                        id: 'english',
                        type: 'text',
-                       mainText: 'Is English your First Language? (Yes/No)'
+                       mainText: 'Is English your First Language? (Yes/No)',
+                       requiredChoice: true
                    },
                    {
                        id: 'language',
@@ -875,7 +1602,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    },
                    {
                        id: 'englishAge',
-                       type: 'text',
+                       type: 'int',
                        mainText: 'If you answered "No", at what age did you learn English? (Enter 0 if you answered "Yes")'
                    },
                    {
