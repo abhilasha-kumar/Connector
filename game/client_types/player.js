@@ -13,6 +13,9 @@
 
 "use strict";
 
+
+
+
 module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
     stager.setOnInit(function() {
@@ -37,6 +40,19 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.visualTimer = node.widgets.append('VisualTimer', header);
 
         this.doneButton = node.widgets.append('DoneButton', header);
+
+        this.inArrayCaseInsensitive = function(needle, haystackArray){
+            //Iterates over an array of items to return the index of the first item that matches the provided val ('needle') in a case-insensitive way.  Returns -1 if no match found.
+            var defaultResult = false;
+            var result = defaultResult;
+            var i;
+            for(i = 0; i<haystackArray.length; i++){
+                if (result == defaultResult && haystackArray[i].toLowerCase() == needle.toLowerCase()) {
+                    result = true;
+                }
+            }
+            return result;
+        }
 
         this.board0 = ["SMELL","FAMILY","BLOW","AMP","TANK","BIRTHDAY","PUNISHMENT","HELICOPTER","BLAME","FIB","EYES","WEEP","THIRST","FOLLOWER","ANTIDOTE","PIE","BLAZE","LEAP","DATE","NAVY"];
         this.board1 = ["BENCH","GLOW","SUNNY","IDIOT","QUICK","ANALYZE","BEAM","CAVE","OAK","RED","ROBIN","TREE","FIRM","CUT","RUN","KNIGHT","TRIM","SITE","BIRD","MONTH"];
@@ -130,6 +146,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.id;
         this.randomCode;
 
+
+
     });
 
     stager.extendStep('consent', {
@@ -215,24 +233,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     node.set({target1: this.pairList[this.roundCounter][this.randomOrder]});
                     node.set({target2: this.pairList[this.roundCounter][1-this.randomOrder]});
 
-                    var validation = function(value) {
-                        var res;
-                        res = { value: value };
-                        if (value.trim() == '' && this.requiredChoice) {
-                            res.err = this.getText('emptyErr');
-                            return res;
-                        }
-                        // Custom validation (only reports about last word).
-                        value.split(" ").forEach(function(t) {
-                            if (J.inArray(t, ["word1", "word2", "word3"])) {
-                                res.err = 'You have used a forbidden word: ' + t;
-                            }
-                        });
-                        return res;
-                    };
 
                     this.cluesGive = node.widgets.append('CustomInputGroup', W.gid('containerbottom'), {//create customInputGroup widget for clue options, only the first is mandatory
-                       validation: validation,
                        id: 'cluesGive',
                        orientation: 'H',
                        required: true,
@@ -279,7 +281,41 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                                id: 'clue8',
                                mainText: 'Option 8'
                            }
-                       ]
+                       ],
+                       validation: function(res, values) {
+                           // Custom validation (only reports about last word).
+
+                           if (node.game.inArrayCaseInsensitive(values.clue1, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           /*
+                           if (J.inArray(values.clue2, this.boardboard[this.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           if (J.inArray(values.clue3, this.boardboard[this.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           if (J.inArray(values.clue4, this.boardboard[this.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           if (J.inArray(values.clue5, this.boardboard[this.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           if (J.inArray(values.clue6, this.boardboard[this.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           if (J.inArray(values.clue7, this.boardboard[this.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           if (J.inArray(values.clue8, this.boardboard[this.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+                           */
+                           return res;
+                       },
+                       oninput: function(res, input, that) {
+                           that.validation(res, input);
+                       }
 
                    });
                 },
@@ -623,7 +659,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
                         this.optionTimeArray.push(memArray[i].customTimeStamp);
 
-                    };
+                    }
                 }
             }
         }
