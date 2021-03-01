@@ -288,7 +288,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                            if (node.game.inArrayCaseInsensitive(values.clue1, node.game.boardboard[node.game.roundCounter])) {
                                res.err = 'You have used a forbidden word: ' + values.clue1;
                            }
-                           /*
+
                            if (J.inArray(values.clue2, this.boardboard[this.roundCounter])) {
                                res.err = 'You have used a forbidden word: ' + values.clue1;
                            }
@@ -310,7 +310,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                            if (J.inArray(values.clue8, this.boardboard[this.roundCounter])) {
                                res.err = 'You have used a forbidden word: ' + values.clue1;
                            }
-                           */
+
                            return res;
                        },
                        oninput: function(res, input, that) {
@@ -447,7 +447,20 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                        type: 'text',
                        className: 'centered',
                        root: 'cbrd',
-                       requiredChoice: true
+                       requiredChoice: true,
+                       validation: function(value) {
+                           var res;
+                           res = { value: value };
+                           // Custom validation (only reports about last word).
+
+                           if (node.game.inArrayCaseInsensitive(value, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + value;
+                           }
+                           return res;
+                       },
+                       oninput: function(res, input, that) {
+                           that.validation(res, input);
+                       }
                    });
                 },
                 done: function() {//send clue to other player and clue and time info to database
@@ -1333,7 +1346,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
                         this.optionTimeArray.push(memArray[i].customTimeStamp);
 
-                    };
+                    }
                 }
             }
         }
@@ -1448,7 +1461,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                             el.removeEventListener('click', this.clicker2);
                             node.done();
 
-                        };
+                        }
 
                     }
                     el.addEventListener('click', this.clicker2);
