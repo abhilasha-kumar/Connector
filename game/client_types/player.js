@@ -285,36 +285,38 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                        validation: function(res, values) {
                            // Custom validation (only reports about last word).
 
-                           if (node.game.inArrayCaseInsensitive(values.clue1, node.game.boardboard[node.game.roundCounter])) {
+                           if (values.clue1 && node.game.inArrayCaseInsensitive(values.clue1, node.game.boardboard[node.game.roundCounter])) {
                                res.err = 'You have used a forbidden word: ' + values.clue1;
                            }
 
-                           if (J.inArray(values.clue2, this.boardboard[this.roundCounter])) {
-                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           if (values.clue2 && node.game.inArrayCaseInsensitive(values.clue2, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue2;
                            }
-                           if (J.inArray(values.clue3, this.boardboard[this.roundCounter])) {
-                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           if (values.clue3 && node.game.inArrayCaseInsensitive(values.clue3, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue3;
                            }
-                           if (J.inArray(values.clue4, this.boardboard[this.roundCounter])) {
-                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           if (values.clue4 && node.game.inArrayCaseInsensitive(values.clue4, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue4;
                            }
-                           if (J.inArray(values.clue5, this.boardboard[this.roundCounter])) {
-                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           if (values.clue5 && node.game.inArrayCaseInsensitive(values.clue5, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue5;
                            }
-                           if (J.inArray(values.clue6, this.boardboard[this.roundCounter])) {
-                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           if (values.clue6 && node.game.inArrayCaseInsensitive(values.clue6, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue6;
                            }
-                           if (J.inArray(values.clue7, this.boardboard[this.roundCounter])) {
-                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           if (values.clue7 && node.game.inArrayCaseInsensitive(values.clue7, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue7;
                            }
-                           if (J.inArray(values.clue8, this.boardboard[this.roundCounter])) {
-                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           if (values.clue8 && node.game.inArrayCaseInsensitive(values.clue8, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue8;
                            }
 
                            return res;
                        },
                        oninput: function(res, input, that) {
-                           that.validation(res, input);
+                           var values = {};
+                           values[input.it] = res;
+                           that.validation(res, values);
                        }
 
                    });
