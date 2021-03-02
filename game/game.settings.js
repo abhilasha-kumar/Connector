@@ -30,11 +30,20 @@ module.exports = {
      * used to initialize the game timer for the step.
      */
     TIMER: {
-         clueOptions: 120000,
-         clueFinal: 120000,
-         guessOptions: 120000,
-         guessFinal: 120000,
-         feedback: 120000
+         consent: 300000,
+         idGet: 120000,
+         instructions: 300000,
+         clueOptionsprac: 180000,
+         clueFinalprac: 60000,
+         guessOptionsprac: 180000,
+         guessFinalprac: 60000,
+         feedbackprac: 60000,
+         endprac: 120000,
+         clueOptions: 180000,
+         clueFinal: 60000,
+         guessOptions: 180000,
+         guessFinal: 60000,
+         feedback: 60000
     },
 
     // # Game specific properties

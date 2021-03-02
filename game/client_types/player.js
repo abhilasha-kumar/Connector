@@ -140,12 +140,12 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         this.roundCounter = 0;//iterated value to move through the word pairs
         this.smallRoundCounter = 0;//iterated value to record the 3 trials for each word pair
-        this.pairnumber = 46;//the number of pairs in the total experiment, should be 57
-        this.pracpairnumber=3;
+        this.pairnumber = 3;//the number of pairs in the total experiment, should be 57
+        this.pracpairnumber=1;
         this.optionTimeArray = [0];
         this.id;
         this.randomCode;
-
+        this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
 
 
     });
@@ -228,7 +228,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
                     W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
-                    this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
+
                     W.setInnerHTML('trgtWords', this.pairList[this.roundCounter][this.randomOrder] + " and " + this.pairList[this.roundCounter][1-this.randomOrder]);
                     node.set({target1: this.pairList[this.roundCounter][this.randomOrder]});
                     node.set({target2: this.pairList[this.roundCounter][1-this.randomOrder]});
@@ -313,11 +313,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
                            return res;
                        },
+
                        oninput: function(res, input, that) {
                            var values = {};
                            values[input.it] = res;
                            that.validation(res, values);
                        }
+
 
                    });
                 },
@@ -789,7 +791,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                             el.removeEventListener('click', this.clicker2);
                             node.done();
 
-                        };
+                        }
 
                     }
                     el.addEventListener('click', this.clicker2);
@@ -819,6 +821,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         myDiv3.innerHTML = "";
                         this.roundCounter += 1;
+                        this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
                         var j;
                         for(j=0; j < this.smallRoundCounter; j++){
                             this.cluespast.pop();
@@ -836,6 +839,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
                         myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         this.roundCounter += 1;
+                        this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
                         var k;
                         for(k=0; k < this.smallRoundCounter; k++){
                             this.cluespast.pop();
@@ -958,7 +962,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
                     W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
-                    this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
                     W.setInnerHTML('trgtWords', this.pairList[this.roundCounter][this.randomOrder] + " and " + this.pairList[this.roundCounter][1-this.randomOrder]);
                     node.set({target1: this.pairList[this.roundCounter][this.randomOrder]});
                     node.set({target2: this.pairList[this.roundCounter][1-this.randomOrder]});
@@ -966,6 +969,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     this.cluesGive = node.widgets.append('CustomInputGroup', W.gid('containerbottom'), {//create customInputGroup widget for clue options, only the first is mandatory
                        id: 'cluesGive',
                        orientation: 'H',
+                       required: true,
+
+
                        //mainText: 'Please list possible clues.',
                        sharedOptions: {
                           type: 'text',
@@ -1007,7 +1013,45 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                                id: 'clue8',
                                mainText: 'Option 8'
                            }
-                       ]
+                       ],
+                       validation: function(res, values) {
+                           // Custom validation (only reports about last word).
+
+                           if (values.clue1 && node.game.inArrayCaseInsensitive(values.clue1, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue1;
+                           }
+
+                           if (values.clue2 && node.game.inArrayCaseInsensitive(values.clue2, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue2;
+                           }
+                           if (values.clue3 && node.game.inArrayCaseInsensitive(values.clue3, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue3;
+                           }
+                           if (values.clue4 && node.game.inArrayCaseInsensitive(values.clue4, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue4;
+                           }
+                           if (values.clue5 && node.game.inArrayCaseInsensitive(values.clue5, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue5;
+                           }
+                           if (values.clue6 && node.game.inArrayCaseInsensitive(values.clue6, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue6;
+                           }
+                           if (values.clue7 && node.game.inArrayCaseInsensitive(values.clue7, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue7;
+                           }
+                           if (values.clue8 && node.game.inArrayCaseInsensitive(values.clue8, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + values.clue8;
+                           }
+
+                           return res;
+                       },
+
+                       oninput: function(res, input, that) {
+                           var values = {};
+                           values[input.it] = res;
+                           that.validation(res, values);
+                       }
+
 
                    });
                 },
@@ -1137,7 +1181,20 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                        type: 'text',
                        className: 'centered',
                        root: 'cbrd',
-                       requiredChoice: true
+                       requiredChoice: true,
+                       validation: function(value) {
+                           var res;
+                           res = { value: value };
+                           // Custom validation (only reports about last word).
+
+                           if (node.game.inArrayCaseInsensitive(value, node.game.boardboard[node.game.roundCounter])) {
+                               res.err = 'You have used a forbidden word: ' + value;
+                           }
+                           return res;
+                       },
+                       oninput: function(res, input, that) {
+                           that.validation(res, input);
+                       }
                    });
                 },
                 done: function() {//send clue to other player and clue and time info to database
@@ -1492,6 +1549,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         myDiv3.innerHTML = "";
                         this.roundCounter += 1;
+                        this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
                         if(this.roundcounter%3 == 0){
                             myDiv2.innerHTML = "You will now move on to the next board. Please click Done.";
                         }
@@ -1510,6 +1568,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         myDiv2.innerHTML = "You have exhausted your three attempts. The correct words were " + this.pairList[this.roundCounter][0] + " and " + this.pairList[this.roundCounter][1] + ".";
                         myDiv3.innerHTML = "You will now move on to the next word pair. Please click Done.";
                         this.roundCounter += 1;
+                        this.randomOrder = Math.floor(Math.random()*2)//randomize the order of target words for the clue-giver
                         if(this.roundcounter%3 == 0){
                             myDiv3.innerHTML = "You will now move on to the next board. Please click Done.";
                         }
