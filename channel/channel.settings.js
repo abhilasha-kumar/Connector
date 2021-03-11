@@ -57,17 +57,8 @@ module.exports = {
      *
      * Default: name-of-the-channel
      */
-    playerServer: {
-
-        endpoint: 'codenames',
-
-
-        // Anti-spoofing, extra check to see if msg.from matches socket.id
-        // on SocketIo socket connections. Spoofed messages are logged
-        // normally, and an additional log entry with id and from msg is added.
-        // Disable only if you need that extra bit of speed.
-        antiSpoofing: true
-    },
+    playerServer: "codenames",
+    adminServer: "codenames/admin",
 
     /**
      * ## adminServer (object|string) Optional
