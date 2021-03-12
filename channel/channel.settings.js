@@ -179,7 +179,7 @@ module.exports = {
      *
      * Default: TRUE
      */
-    // sioQuery: false,
+    sioQuery: false,
 
     /**
      * ### defaultChannel (boolean) Optional

@@ -435,7 +435,7 @@ module.exports = {
      *
      * A button is added to the interface.
      */
-    ALLOW_PLAY_WITH_BOTS: true,
+    ALLOW_PLAY_WITH_BOTS: false,
 
     /** ### ALLOW_SELECT_TREATMENT
      *
@@ -445,6 +445,6 @@ module.exports = {
      *
      * A button is added to the interface.
      */
-    ALLOW_SELECT_TREATMENT: true
+    ALLOW_SELECT_TREATMENT: false
 
 };
