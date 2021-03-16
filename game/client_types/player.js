@@ -140,8 +140,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         this.roundCounter = 0;//iterated value to move through the word pairs
         this.smallRoundCounter = 0;//iterated value to record the 3 trials for each word pair
-        this.pairnumber = 3;//the number of pairs in the total experiment, should be 57
-        this.pracpairnumber=1;
+        this.pairnumber = 57;//the number of pairs in the total experiment, should be 57
+        this.pracpairnumber=3;
         this.optionTimeArray = [0];
         this.id;
         this.randomCode;
