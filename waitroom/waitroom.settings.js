@@ -63,7 +63,7 @@ module.exports = {
      *
      * After the max waiting time expired clients are disconnected
      */
-    MAX_WAIT_TIME: 90000,
+    MAX_WAIT_TIME: 300000,
 
     /**
      * ## START_DATE (string|object) Optional
@@ -326,7 +326,7 @@ module.exports = {
      *
      * Default: { title: 'Welcome!', addToBody: true }
      */
-     PAGE_TITLE: { title: 'Welcome to Code Names!', addToBody: true },
+     PAGE_TITLE: { title: 'Welcome to Connector!', addToBody: true },
 
     /** ### TEXTS
      *

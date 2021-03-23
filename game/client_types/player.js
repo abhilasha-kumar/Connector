@@ -37,7 +37,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         // Add widgets.
         this.visualRound = node.widgets.append('VisualRound', header);
 
-        this.visualTimer = node.widgets.append('VisualTimer', header);
+        //this.visualTimer = node.widgets.append('VisualTimer', header);
 
         this.doneButton = node.widgets.append('DoneButton', header);
 
@@ -88,7 +88,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.pair8 = ["STERN","WIND"];
         this.pair9 = ["TEETH","GUMS"];
         this.pair10 = ["HOLY","KIND"];
-        this.pair11 = ["FAIRY","MILD"];
+        this.pair11 = ["RUDE","REGRET"];
         this.pair12 = ["JUMP","LEAP"];
         this.pair13 = ["DREAM","BET"];
         this.pair14 = ["TRAVEL","ANKLE"];
@@ -96,7 +96,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.pair16 = ["LION","TIGER"];
         this.pair17 = ["HAND","BIRTH"];
         this.pair18 = ["SIT","STAND"];
-        this.pair19 = ["CLEVER","FLOUR"];
+        this.pair19 = ["CRUST","BOOT"];
         this.pair20 = ["ELM","ROCK"];
         this.pair21 = ["OLD","NEW"];
         this.pair22 = ["GLASS","CAGE"];
@@ -108,7 +108,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         this.pair28 = ["OLIVE","REAL"];
         this.pair29 = ["WEIRD","TRAUMA"];
         this.pair30 = ["FEET","CHAPEL"];
-        this.pair31 = ["CHAR","TABLE"];
+        this.pair31 = ["CHAIR","TABLE"];
         this.pair32 = ["GARAGE","BONE"];
         this.pair33 = ["BEE","HONEY"];
         this.pair34 = ["CAMEL","COAL"];
@@ -140,7 +140,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         this.roundCounter = 0;//iterated value to move through the word pairs
         this.smallRoundCounter = 0;//iterated value to record the 3 trials for each word pair
-        this.pairnumber = 57;//the number of pairs in the total experiment, should be 57
+        this.pairnumber = 33;//the number of pairs in the total experiment, should be 57
         this.pracpairnumber=3;
         this.optionTimeArray = [0];
         this.id;
@@ -602,15 +602,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     }
                     if(this.smallRoundCounter==1){
                         W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
                         W.setInnerHTML('cluepast0txt', "Your second clue is ");
                         W.setInnerHTML('cluepast0', this.clueReceived + ".");
                     }
                     if(this.smallRoundCounter==2){
                         W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
                         W.setInnerHTML('cluepast0txt', "Your second clue was ");
-                        W.setInnerHTML('cluepast0', this.cluespast[1] + ".");
+                        W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
                         W.setInnerHTML('cluepast1txt', "Your third clue is ");
                         W.setInnerHTML('cluepast1', this.clueReceived + ".");
                     }
@@ -619,15 +619,20 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     this.clicker = function (e){//add event listener to record button presses of game board
                         var target = e.target;
                         var myDiv = W.getElementById("glist");
+                        if(target.className.match("button button1")){
                         myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
                         node.game.doneButton.enable();
-                        node.game.memory.add({
-                            player: node.player.id,
-                            stage: node.game.getCurrentGameStage(),
-                            GuessOptions: target.innerHTML,
-                            GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
-                            customTimeStamp: node.timer.getTimeSince('start')
-                        });
+
+                            node.game.memory.add({
+                                player: node.player.id,
+                                stage: node.game.getCurrentGameStage(),
+                                GuessOptions: target.innerHTML,
+                                GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
+                                customTimeStamp: node.timer.getTimeSince('start')
+                            });
+                        }
+
+
                     },
                     el.addEventListener('click', this.clicker);//add event listener
                 },
@@ -763,7 +768,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     this.clicker2 = function (e){//event listener that receives two words and then ends the step
                         var target = e.target;
                         var myDiv = W.getElementById("alist");
-
+                        if(target.className.match("button button1")){
                         if(myDiv.innerHTML == " Your final answers:  "){//the condition if no word has been added, stores the first word and sends it to the partner
                             myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML;
                             node.say('GUESS1', node.game.partner, target.innerHTML);
@@ -792,6 +797,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                             node.done();
 
                         }
+                    }
 
                     }
                     el.addEventListener('click', this.clicker2);
@@ -1331,15 +1337,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     }
                     if(this.smallRoundCounter==1){
                         W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
                         W.setInnerHTML('cluepast0txt', "Your second clue is ");
                         W.setInnerHTML('cluepast0', this.clueReceived + ".");
                     }
                     if(this.smallRoundCounter==2){
                         W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[0] + ".");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
                         W.setInnerHTML('cluepast0txt', "Your second clue was ");
-                        W.setInnerHTML('cluepast0', this.cluespast[1] + ".");
+                        W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
                         W.setInnerHTML('cluepast1txt', "Your third clue is ");
                         W.setInnerHTML('cluepast1', this.clueReceived + ".");
                     }
@@ -1348,6 +1354,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     this.clicker = function (e){//add event listener to record button presses of game board
                         var target = e.target;
                         var myDiv = W.getElementById("glist");
+                        if(target.className.match("button button1")){
                         myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
                         node.game.doneButton.enable();
                         node.game.memory.add({
@@ -1357,6 +1364,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                             GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
                             customTimeStamp: node.timer.getTimeSince('start')
                         });
+                    }
                     },
                     el.addEventListener('click', this.clicker);//add event listener
                 },
@@ -1492,6 +1500,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     this.clicker2 = function (e){//event listener that receives two words and then ends the step
                         var target = e.target;
                         var myDiv = W.getElementById("alist");
+                        if(target.className.match("button button1")){
 
                         if(myDiv.innerHTML == " Your final answers:  "){//the condition if no word has been added, stores the first word and sends it to the partner
                             myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML;
@@ -1521,6 +1530,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                             node.done();
 
                         }
+                    }
 
                     }
                     el.addEventListener('click', this.clicker2);
@@ -1747,7 +1757,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         donebutton: false,
         frame: 'end.htm',
         cb: function() {
-            node.game.visualTimer.setToZero();
+            //node.game.visualTimer.setToZero();
             var myDiv = W.getElementById("compcode");
             myDiv.innerHTML = "Your completion code is: " + this.randomCode;
         }

@@ -29,9 +29,9 @@ module.exports = {
      * Default: the name of the game, as found in the package.json file.
      */
      name: 'codenames',
-
+     alias: (["connector"]),
     /**
-     * ## alias (string|array) Optional
+     * ##  Optional
      *
      * Alternative name/s for the channel
      *
@@ -57,8 +57,7 @@ module.exports = {
      *
      * Default: name-of-the-channel
      */
-    playerServer: "codenames",
-    adminServer: "codenames/admin",
+
 
     /**
      * ## adminServer (object|string) Optional
