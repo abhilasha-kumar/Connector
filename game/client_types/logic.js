@@ -47,7 +47,10 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
     var channel =  gameRoom.channel;
     let db = node.game.memory;
     // Must implement the stages here.
-
+    // stager.setDefaultProperty('minPlayers', [
+    //     settings.MIN_PLAYERS,
+    //     function() { node.game.gotoStep('demographics'); }
+    // ]);
 
     stager.extendStep('instructions', {
         cb: function() {
@@ -56,7 +59,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         matcher: {//assign roles for gameplay
             roles: ['CLUEGIVER','GUESSER'],
             match: 'roundrobin',
-        }
+        },
+        reconnect: true,
+
     });
 
 
