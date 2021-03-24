@@ -20,6 +20,8 @@ module.exports = {
     // Variables shared by all treatments.
     // #nodeGame properties:
     MIN_PLAYERS: 2,
+    WAIT_TIME: 30,
+    WAIT_TIME_TEXT: "Please wait for your partner to reconnect",
 
     /**
      * ### TIMER (object) [nodegame-property]
