@@ -9,6 +9,7 @@ This is the game file that implements the nodeGame framework to run online multi
 
 At each stage of the experiment the participants list the options that they considered in chronological order. This allows us to compare the times they spent searching for words to help model the search space. See Kumar_Connector.pdf for full details.
 
+To use this game follow the steps at https://github.com/nodeGame/nodegame/wiki/Getting-Started-v6 and create a new game, replacing it's files with this project. 
 
 ## License
 
