@@ -1,0 +1,2689 @@
+---
+title: "Connector-Models"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tidyboot)
+library(ggplot2)
+library(ggthemes)
+library(broom)
+library(lme4)
+library(lmerTest)
+
+```
+
+# Importing Experiment Data
+
+```{r}
+c = read.csv("connector_maindata.csv", header = TRUE, sep = ",")
+c$wordpair = paste(c$Word1, "-", c$Word2)
+
+## total success rate across all 3 attempts
+
+accuracy = group_by(c,Experiment, Subject) %>%
+  mutate(correct = ifelse((Player2.ACC == 1 | Player2SecondAnswer.ACC == 1 |
+                             Player2ThirdAnswer.ACC == 1), 1, 0))%>%
+  select(Experiment, Subject, wordpair, correct) %>%
+  group_by(Subject) %>%
+  summarise_at(vars(correct), mean)
+  
+mean(accuracy$correct)
+sd(accuracy$correct)
+
+## attempts for different levels
+
+Rmisc::summarySE(c, measurevar = "Attempts", groupvars = "Level")
+
+## testing attempts across levels
+c$Level = as.factor(as.character(c$Level))
+contrasts(c$Level) = contr.treatment(3, base = 3)
+attempts_lm = lmer(data = c, Attempts ~ Level + (1|wordpair) + (1|Subject))
+summary(attempts_lm)
+  
+```
+
+# TABLE 1: Descriptive Statistics
+
+These estimates correspond to results reported in Table 1.
+
+## Guesser Accuracy
+```{r}
+## accuracy in first, second, and third attempt across the full dataset
+
+c %>% mutate(group = 1)%>%
+  Rmisc::summarySE(., measurevar = "Player2.ACC",
+                   groupvars = "group")
+
+c %>% filter(Player2.ACC == 0) %>% mutate(group = 1)%>%
+  Rmisc::summarySE(., measurevar = "Player2SecondAnswer.ACC",
+                   groupvars = "group")  
+
+c %>% filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>% mutate(group = 1)%>%
+  Rmisc::summarySE(., measurevar = "Player2ThirdAnswer.ACC",
+                   groupvars = "group")  
+```
+
+## N for each level
+
+```{r}
+## number of participants going into each level
+c$Levelfac = ordered(as.factor(as.character(c$Level)), 
+                     levels = c("Easy", "Medium", "Hard"))
+
+c %>% group_by(Levelfac, Subject) %>%
+  summarise(count = n()) %>%
+  group_by(Levelfac) %>%
+  summarise(N = n())
+
+c %>% filter(Player2.ACC == 0) %>%
+  group_by(Levelfac, Subject) %>%
+  summarise(count = n()) %>%
+  group_by(Levelfac) %>%
+  summarise(N = n())
+
+c %>% filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+  group_by(Levelfac, Subject) %>%
+  summarise(count = n()) %>%
+  group_by(Levelfac) %>%
+  summarise(N = n())
+```
+
+
+## Speaker Mean RT to Generate Clue
+
+```{r}
+
+
+contrasts(c$Levelfac)= contr.treatment(3, base = 2)
+
+## mean RTs for first attempt
+
+c %>%
+  Rmisc::summarySE(., measurevar = "Player1.RT",
+                   groupvars = "Levelfac")
+
+a1_speaker_rt_lme = lmer(data= c, Player1.RT ~ Levelfac + (1|Subject))
+summary(a1_speaker_rt_lme)
+
+
+## mean RTs second attempt
+
+c %>% filter(Player2.ACC == 0) %>%
+  Rmisc::summarySE(., measurevar = "Player1SecondClue.RT",
+                   groupvars = "Levelfac")
+
+a2_speaker_rt_lme = c %>% filter(Player2.ACC == 0) %>% 
+  lmer(data= ., Player1SecondClue.RT ~ Levelfac + (1|Subject))
+summary(a2_speaker_rt_lme)
+
+## mean RTs for third attempt
+
+c %>%   filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+  Rmisc::summarySE(., measurevar = "Player1ThirdClue.RT",
+                   groupvars = "Levelfac")
+
+a3_speaker_rt_lme = c %>% filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+  lmer(data= ., Player1ThirdClue.RT ~ Levelfac + (1|Subject))
+summary(a3_speaker_rt_lme)
+
+```
+
+## Guesser Mean RT to Guess Word Pair
+```{r}
+# first attempt
+c %>%
+  Rmisc::summarySE(., measurevar = "Player2.RT",
+                   groupvars = "Levelfac")
+
+a1_guesser_rt_lme = lmer(data= c, Player2.RT ~ Levelfac + (1|Subject))
+summary(a1_guesser_rt_lme)
+
+## second attempt
+
+c %>% filter(Player2.ACC == 0) %>%
+  Rmisc::summarySE(., measurevar = "Player2SecondAnswer.RT",
+                   groupvars = "Levelfac")
+
+a2_guesser_rt_lme = c %>% filter(Player2.ACC == 0) %>% 
+  lmer(data= ., Player2SecondAnswer.RT ~ Levelfac + (1|Subject))
+summary(a2_guesser_rt_lme)
+
+
+## third attempt
+
+c %>% filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+  Rmisc::summarySE(., measurevar = "Player2ThirdAnswer.RT",
+                   groupvars = "Levelfac", na.rm = TRUE)
+
+a3_guesser_rt_lme = c %>% filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+  lmer(data= ., Player2ThirdAnswer.RT ~ Levelfac + (1|Subject))
+summary(a3_guesser_rt_lme)
+
+
+
+```
+
+## Guesser Accuracy Across Distance
+
+```{r}
+
+## first attempt
+c %>%
+  Rmisc::summarySE(., measurevar = "Player2.ACC",
+                   groupvars = "Levelfac")
+
+a1_guesser_acc_lme = lmer(data= c, Player2.ACC ~ Levelfac + (1|Subject))
+summary(a1_guesser_acc_lme)
+
+## Second Attempt
+
+c %>% filter(Player2.ACC == 0) %>%
+  Rmisc::summarySE(., measurevar = "Player2SecondAnswer.ACC",
+                   groupvars = "Levelfac")
+
+a2_guesser_acc_lme = c %>% filter(Player2.ACC == 0) %>% 
+  lmer(data= ., Player2SecondAnswer.ACC ~ Levelfac + (1|Subject))
+summary(a2_guesser_acc_lme)
+
+
+## Third Attempt
+
+c %>% filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+  Rmisc::summarySE(., measurevar = "Player2ThirdAnswer.ACC",
+                   groupvars = "Levelfac", na.rm = TRUE)
+
+a3_guesser_rt_lme = c %>% filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+  lmer(data= ., Player2ThirdAnswer.ACC ~ Levelfac + (1|Subject))
+summary(a3_guesser_rt_lme)
+```
+
+## Other stats
+
+```{r}
+## how many % words were corectly guessed in first/second/third attempt
+
+c$wordpair = paste(c$Word1, "-", c$Word2)
+words_firstattempt = group_by(c, Experiment, wordpair) %>%
+    summarise_at(vars(Player2.ACC), sum)
+
+words_secondattempt = group_by(c, wordpair) %>% filter(Player2.ACC == 0) %>%
+    summarise_at(vars(Player2SecondAnswer.ACC), sum)
+
+words_thirdattempt = group_by(c, wordpair) %>% 
+  filter(Player2.ACC == 0 & Player2SecondAnswer.ACC == 0) %>%
+    summarise_at(vars(Player2ThirdAnswer.ACC), sum)
+
+words_total_attempts = left_join(words_firstattempt, words_secondattempt,
+                                  by = "wordpair")
+
+words_total_attempts = left_join(words_total_attempts, words_thirdattempt)
+
+words_total_attempts$percentafter1 = ifelse(words_total_attempts$Experiment == "E1",
+  words_total_attempts$Player2.ACC/31, words_total_attempts$Player2.ACC/44)
+
+words_total_attempts$percentafter2 = ifelse(words_total_attempts$Experiment == "E1",
+                                          (words_total_attempts$Player2.ACC + 
+                                       words_total_attempts$Player2SecondAnswer.ACC) /31,
+                                       (words_total_attempts$Player2.ACC + 
+                                       words_total_attempts$Player2SecondAnswer.ACC) /44)
+
+
+
+words_total_attempts$percentafter3 = ifelse(words_total_attempts$Experiment == "E1",
+                                            (words_total_attempts$Player2.ACC + 
+                                       words_total_attempts$Player2SecondAnswer.ACC +
+                                      words_total_attempts$Player2ThirdAnswer.ACC  ) /31,
+                                       (words_total_attempts$Player2.ACC + 
+                                       words_total_attempts$Player2SecondAnswer.ACC +
+                                      words_total_attempts$Player2ThirdAnswer.ACC  ) /44)
+
+words_total_attempts_over50 = words_total_attempts %>% 
+  filter(percentafter2 > 0.50)
+
+```
+
+# TABLE 2: Clue Frequencies
+
+```{r}
+total_subs = c %>% group_by(wordpair) %>% summarize(total_N = n()) 
+
+top_freq = c %>%
+  group_by(Levelfac, wordpair, Clue1) %>% summarize(count = n()) %>%
+  left_join(total_subs) %>%
+  mutate(percent = round((count/total_N)*100,2))%>%
+  group_by(wordpair) %>% top_n(20, percent) %>%
+  arrange( Levelfac, wordpair, desc(percent))
+
+```
+
+
+# TABLE 3: Speaker Scores
+
+## Top Scores
+
+For top scores, we initially use the "speaker_models" file to obtain the topmost predictions by each model but this is subsquently corrected for plurals, stems, etc. Here we read in the corrected file.
+
+```{r}
+library(tidyverse)
+## reading in corrected file with changes for plurals, verbs, etc.
+
+top_speaker = read.csv("top_speaker_models.csv", header = TRUE, sep = ",", check.names = F)
+
+## read in the board_clues_all file with 1100 clues
+c_clues = read.csv("final_board_clues_all.csv", header = TRUE, sep = ",")
+library(tidyverse)
+connector_s1 = c_clues %>%
+  group_by(wordpair) %>% top_n(1, clueCount) %>%
+  select(wordpair, Clue1)
+
+connector_s1 <- aggregate(Clue1 ~ wordpair, data = connector_s1, paste, collapse = ",")
+colnames(connector_s1) = c("wordpair", "topClue")
+
+top_speaker = left_join(top_speaker, connector_s1)
+
+## scoring
+## 0 if top score is in the prediction, 1 if top score is not in the prediction
+
+top_speaker = top_speaker %>% 
+  rowwise() %>% 
+  mutate(usf_s_acc = 
+           as.numeric(str_detect(`USF-Strength`, topClue) | str_detect(topClue, `USF-Strength`)),
+         usf_ppmi_acc = 
+           as.numeric(str_detect(`USF-PPMI`, topClue) | str_detect(topClue, `USF-PPMI`)),
+         usf_rw_acc = 
+           as.numeric(str_detect(`USF-RW`, topClue) | str_detect(topClue, `USF-RW`)),
+         swow_s_acc = 
+           as.numeric(str_detect(`SWOW-Strength`, topClue) | str_detect(topClue, `SWOW-Strength`)),
+         swow_ppmi_acc = 
+           as.numeric(str_detect(`SWOW-PPMI`, topClue) | str_detect(topClue, `SWOW-PPMI`)),
+         swow_rw_acc = as.numeric(str_detect(`SWOW-RW`, topClue) | str_detect(topClue, `SWOW-RW`)),
+         glove17_glove17_acc = 
+           as.numeric(str_detect(`GloVe-2017`, topClue) | str_detect(topClue, `GloVe-2017`)),
+          word2vec17_word2vec17_acc = 
+           as.numeric(str_detect(`word2vec-2017`, topClue) | str_detect(topClue, `word2vec-2017`)))
+
+
+top_speaker_main = top_speaker %>% select(wordpair, colnames(top_speaker)[11:18])
+top_speaker_main = gather(top_speaker_main, Model, Accuracy,
+                          colnames(top_speaker)[11:18])
+
+top_speaker_main$Accuracy = ifelse(is.na(top_speaker_main$Accuracy), 0,top_speaker_main$Accuracy)
+
+## lme
+library(lme4)
+
+top_speaker_main$Model = as.factor(top_speaker_main$Model)
+contrasts(top_speaker_main$Model) = contr.treatment(8, base = 8)
+lme_topclue = glmer(data = top_speaker_main, Accuracy ~ Model + (1|wordpair),
+                    family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+
+summary(lme_topclue)
+
+top_speaker_main_rmisc = Rmisc::summarySE(top_speaker_main,
+                                    measurevar = "Accuracy",
+                                    groupvars = "Model", na.rm = TRUE)
+top_speaker_main_rmisc
+```
+
+#### Figure
+
+```{r}
+top_speaker_fig = top_speaker_main 
+
+top_speaker_fig$Model = ifelse(top_speaker_fig$Model == "word2vec17_word2vec17_acc",
+                               "word2vec", ifelse(top_speaker_fig$Model == "glove17_glove17_acc",
+                                "GloVe", ifelse(top_speaker_fig$Model == "swow_s_acc",
+                        "SWOW-Strength", ifelse(top_speaker_fig$Model == "swow_ppmi_acc",
+                        "SWOW-PPMI", ifelse(top_speaker_fig$Model == "swow_rw_acc",
+                        "SWOW-RW", ifelse(top_speaker_fig$Model == "usf_s_acc",
+                        "USF-Strength", ifelse(top_speaker_fig$Model == "usf_ppmi_acc",
+                        "USF-PPMI", "USF-RW")))))))
+
+
+top_speaker_fig$Model = ordered(as.factor(top_speaker_fig$Model),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-Strength", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-Strength", "USF-PPMI", "USF-RW"
+                                              ))
+library(ggplot2)
+library(ggthemes)
+top_speaker_fig %>%
+ggplot(aes(x = Model, y = Accuracy,
+           group = Model, fill = Model)) + 
+   geom_bar(stat = "identity", position = "dodge", width = 0.7, color= "gray26")+
+ geom_errorbar(aes(ymin=Accuracy - se, ymax=Accuracy + se),
+             width=.01, color = "darkgray",
+             position = position_dodge(0.70))+
+ theme_few()+
+scale_fill_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+       xlab("") + ylab("Model Accuracy") +
+  ggtitle("Speaker Prediction Accuracy")+
+   theme(axis.text.x = element_blank(),
+         axis.ticks.x = element_blank(),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+```
+
+## Average Clue Score (Thawani method)
+
+```{r}
+# instead of top answer or rank correlation, we could see how many of 
+# the different clues did the model get right
+
+speaker_models = read.csv("speaker_models.csv", header = TRUE, sep = ",")
+
+speaker_models$wordpair = paste(speaker_models$Word1, "-", speaker_models$Word2)
+
+
+c_clues = group_by(c, wordpair, Clue1) %>%
+  dplyr::summarise(clueCount = n())
+
+## count total number of unique clues
+
+unique_clues = group_by(c_clues, wordpair) %>%
+  dplyr::summarise(uniqueclues_num= n())
+
+mean(unique_clues$uniqueclues_num)
+sd(unique_clues$uniqueclues_num)
+
+## get these many predictions from each of the models
+
+speaker_models = left_join(speaker_models, unique_clues)
+
+
+## correcting for plurals etc.
+## taking 5 more clues than the "unique" clues because we will be excluding 
+## the wordpairs themselves or any prediction that contains the wordpair
+
+models = speaker_models %>% 
+  group_by(wordpair, Model) %>% top_n(uniqueclues_num+5, clue_sim) %>% 
+  select(wordpair, Model, clue, clue_sim)
+models = models %>% separate(wordpair, into = c("Word1", "Word2"))
+
+models = models %>% filter(!str_detect(clue, Word1) & 
+                             !str_detect(Word1, clue))
+
+models = models %>% filter(!str_detect(clue, Word2) & 
+                             !str_detect(Word2, clue))
+
+models$wordpair = paste(models$Word1, "-", models$Word2)
+
+models = models %>% arrange(wordpair, desc(clue_sim))
+
+models = left_join(models, unique_clues)
+
+# recreate the topn_speaker after having excluded the wordpairs
+
+topn_speaker = models %>% 
+  group_by(wordpair, Model) %>% top_n(uniqueclues_num, clue_sim) %>% 
+  select(wordpair, Model, clue, clue_sim)
+
+topn_nums = group_by(topn_speaker, wordpair) %>%
+  dplyr::summarise(n=n()/8)
+
+topn_collapsed <- aggregate(clue ~ wordpair+Model, data = topn_speaker, paste, collapse = ",")
+topn_wide = spread(topn_collapsed, Model, clue)
+
+## merge with c_clues
+
+c_clues = left_join(c_clues, topn_wide)
+
+## score
+c_clues$Clue1 = str_replace_all(c_clues$Clue1, regex("\\W+"), "")
+
+c_clues = c_clues %>% 
+  rowwise() %>% 
+  mutate(usf_s_acc = as.numeric(str_detect(`USF-Strength`, Clue1)),
+         usf_ppmi_acc = as.numeric(str_detect(`USF-PPMI`, Clue1)),
+         usf_rw_acc = as.numeric(str_detect(`USF-RW`, Clue1)),
+         swow_s_acc = as.numeric(str_detect(`SWOW-Strength`, Clue1)),
+         swow_ppmi_acc = as.numeric(str_detect(`SWOW-PPMI`, Clue1)),
+         swow_rw_acc = as.numeric(str_detect(`SWOW-RW`, Clue1)),
+         glove17_glove_acc = as.numeric(str_detect(`GloVe-2017`, Clue1) ),
+         word2vec17_word2vec_acc = as.numeric(str_detect(`word2vec-2017`, Clue1) ))
+
+topn_speaker_main = c_clues %>% select(wordpair, colnames(c_clues)[12:19])
+topn_speaker_main = gather(topn_speaker_main, Model, Accuracy,
+                          colnames(c_clues)[12:19])
+
+topn_speaker_main$Model = as.factor(topn_speaker_main$Model)
+contrasts(topn_speaker_main$Model) = contr.treatment(8, base = 3)
+
+
+topn_lme =glmer(data = topn_speaker_main, Accuracy ~ Model + (1|wordpair),
+                    family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+
+summary(topn_lme)
+
+topn_speaker_main_rmisc = Rmisc::summarySE(topn_speaker_main,
+                                    measurevar = "Accuracy",
+                                    groupvars = "Model", na.rm = TRUE)
+
+
+topn_speaker_main_rmisc
+```
+
+## Rank Correlations
+
+```{r}
+## can also obtain ranks for different responses based on "cosines"
+
+## get total participants per wordpair
+
+c_clues = read.csv("final_board_clues_all.csv", header = TRUE, sep = ",")
+
+sum_c_clues = c_clues %>% group_by(wordpair) %>%
+  summarise_at(vars(clueCount), sum)
+colnames(sum_c_clues) = c("wordpair", "total_n")
+
+c_clues = left_join(c_clues, sum_c_clues)
+c_clues$prob = c_clues$clueCount/c_clues$total_n
+
+## merge this with the RW/PPMI/Strength cosines
+rank_models = speaker_models %>% select(wordpair, Model, clue, clue_sim)
+colnames(rank_models) = c("wordpair", "Model", "Clue1", "clue_sim")
+
+c_clues = left_join(c_clues, rank_models)
+c_clues = c_clues %>% filter(!is.na(Model))
+
+c_clues = spread(c_clues, Model, clue_sim)
+
+## set missing values to 0
+c_clues[is.na(c_clues)] = 0
+
+## rank these
+
+c_clues = c_clues %>% group_by(wordpair) %>%
+  dplyr::mutate(usf_strength_rank  = dense_rank(`USF-Strength`),
+                usf_PPMI_rank  = dense_rank(`USF-PPMI`),
+                usf_RW_rank  = dense_rank(`USF-RW`),
+                swow_strength_rank  = dense_rank(`SWOW-Strength`),
+                swow_PPMI_rank  = dense_rank(`SWOW-PPMI`),
+                swow_RW_rank  = dense_rank(`SWOW-RW`),
+                glove17_rank = dense_rank(`GloVe-2017`),
+                word2vec17_rank = dense_rank(`word2vec-2017`),
+         prob_rank = dense_rank(prob))
+
+## correlations done at the wordpair level
+
+ranks_func <- function(xx){
+return(expand.grid(
+USFprob_S = cor.test(xx$prob_rank,xx$usf_strength_rank, method = "kendall")$estimate,
+USFprob_PPMI = cor.test(xx$prob_rank,xx$usf_PPMI_rank, method = "kendall")$estimate,
+USFprob_RW = cor.test(xx$prob_rank,xx$usf_RW_rank, method = "kendall")$estimate,
+
+SWOWprob_S = cor.test(xx$prob_rank,xx$swow_strength_rank, method = "kendall")$estimate,
+SWOWprob_PPMI = cor.test(xx$prob_rank,xx$swow_PPMI_rank, method = "kendall")$estimate,
+SWOWprob_RW = cor.test(xx$prob_rank,xx$swow_RW_rank, method = "kendall")$estimate,
+
+gloveprob17 = cor.test(xx$prob_rank,xx$glove17_rank, method = "kendall")$estimate,
+w2vprob17 = cor.test(xx$prob_rank,xx$word2vec17_rank, method = "kendall")$estimate
+))
+}
+
+ranks_num = group_by(c_clues, wordpair ) %>% 
+  dplyr::summarise(wordpair_count = n())
+
+c_clues = left_join(c_clues, ranks_num)
+
+c_clues = c_clues %>% filter(wordpair_count > 1)
+
+require(plyr)
+cordata = ddply(c_clues, .(wordpair), ranks_func)
+
+
+cordata_long = gather(cordata, Model, Rank,
+                      colnames(cordata)[2:9])
+
+cordata_long_rmisc = Rmisc::summarySE(cordata_long, 
+                                measurevar = "Rank",
+                                groupvars = "Model", na.rm = TRUE)
+
+cordata_long_rmisc
+```
+
+# TABLE 4: USF vs.SWOW Comparisons
+
+## Top Answer
+
+```{r}
+
+##reading in corrected file for "top answer"
+
+top_speaker = read.csv("top_speaker_usfswow.csv", header = TRUE, check.names = FALSE)
+
+## read in the board_clues_all file with 1100 clues
+c_clues = read.csv("final_board_clues_all.csv", header = TRUE, sep = ",")
+
+connector_s1 = c_clues %>%
+  group_by(wordpair) %>% top_n(1, clueCount) %>% 
+  select(wordpair, Clue1)
+
+connector_s1 <- aggregate(Clue1 ~ wordpair, data = connector_s1, paste, collapse = ",")
+colnames(connector_s1) = c("wordpair", "topClue")
+
+top_speaker = left_join(top_speaker, connector_s1)
+
+## scoring
+
+top_speaker = top_speaker %>% 
+  rowwise() %>% 
+  mutate(usf_s_4923 = 
+           as.numeric(str_detect(`USF-4923-Strength`, topClue) | str_detect(topClue, `USF-4923-Strength`)),
+         usf_ppmi_4923 = 
+           as.numeric(str_detect(`USF-4923-PPMI`, topClue) | str_detect(topClue, `USF-4923-PPMI`)),
+         usf_rw_4923 = 
+           as.numeric(str_detect(`USF-4923-RW`, topClue) | str_detect(topClue, `USF-4923-RW`)),
+         swow_s_r1_4923_s = 
+           as.numeric(str_detect(`SWOW-R1-4923-Strength`, topClue) | str_detect(topClue, `SWOW-R1-4923-Strength`)),
+         swow_s_r1_4923_ppmi = 
+           as.numeric(str_detect(`SWOW-R1-4923-PPMI`, topClue) | str_detect(topClue, `SWOW-R1-4923-PPMI`)),
+         swow_s_r1_4923_rw = as.numeric(str_detect(`SWOW-R1-4923-RW`, topClue) | str_detect(topClue, `SWOW-R1-4923-RW`)),
+         swow_s_r1_12217_s = 
+           as.numeric(str_detect(`SWOW-R1-12217-Strength`, topClue) | str_detect(topClue, `SWOW-R1-12217-Strength`)),
+         swow_s_r1_12217_ppmi = 
+           as.numeric(str_detect(`SWOW-R1-12217-PPMI`, topClue) | str_detect(topClue, `SWOW-R1-12217-PPMI`)),
+         swow_s_r1_12217_rw = as.numeric(str_detect(`SWOW-R1-12217-RW`, topClue) | str_detect(topClue, `SWOW-R1-12217-RW`)),
+         swow_s_r123_4923_s = 
+           as.numeric(str_detect(`SWOW-R123-4923-Strength`, topClue) | str_detect(topClue, `SWOW-R123-4923-Strength`)),
+         swow_s_r123_4923_ppmi = 
+           as.numeric(str_detect(`SWOW-R123-4923-PPMI`, topClue) | str_detect(topClue, `SWOW-R123-4923-PPMI`)),
+         swow_s_r123_4923_rw = as.numeric(str_detect(`SWOW-R123-4923-RW`, topClue) | str_detect(topClue, `SWOW-R123-4923-RW`)),
+         
+         swow_s_r123_12217_s = 
+           as.numeric(str_detect(`SWOW-Strength`, topClue) | str_detect(topClue, `SWOW-Strength`)),
+         swow_s_r123_12217_ppmi = 
+           as.numeric(str_detect(`SWOW-PPMI`, topClue) | str_detect(topClue, `SWOW-PPMI`)),
+         swow_s_r123_12217_rw = 
+           as.numeric(str_detect(`SWOW-RW`, topClue) | str_detect(topClue, `SWOW-RW`))
+         
+         )
+
+
+top_speaker_main = top_speaker %>% select(wordpair, colnames(top_speaker)[18:32])
+top_speaker_main = gather(top_speaker_main, Model, Accuracy,
+                          colnames(top_speaker)[18:32])
+
+top_speaker_main$Accuracy = ifelse(is.na(top_speaker_main$Accuracy), 0,top_speaker_main$Accuracy)
+
+## lme
+top_speaker_main$Model = as.factor(top_speaker_main$Model)
+contrasts(top_speaker_main$Model) = contr.treatment(15, base = 5)
+lme_topclue = glmer(data = top_speaker_main, Accuracy ~ Model + (1|wordpair),
+                    family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+
+summary(lme_topclue)
+
+top_speaker_main_rmisc = Rmisc::summarySE(top_speaker_main,
+                                    measurevar = "Accuracy",
+                                    groupvars = "Model", na.rm = TRUE)
+top_speaker_main_rmisc
+```
+
+## Average Clue Score
+
+```{r}
+# instead of top answer or rank correlation, we could see how many of 
+# the different clues did the model get right
+swow_rw_full = read.csv("speaker_models.csv", header = TRUE, sep = ",") %>% 
+  filter(Model %in% c("SWOW-Strength", "SWOW-PPMI", "SWOW-RW"))%>%
+    mutate(wordpair = paste(Word1, "-", Word2))
+                          
+speaker_models_usfswow = read.csv("speaker_models_usfswow.csv", header = TRUE, sep = ",") %>%
+  mutate(wordpair = paste(Word1, "-", Word2)) %>%
+  rbind(swow_rw_full)
+
+c_clues = group_by(c, wordpair, Clue1) %>%
+  dplyr::summarise(clueCount = n())
+
+## count total number of unique clues
+
+unique_clues = group_by(c_clues, wordpair) %>%
+  dplyr::summarise(uniqueclues_num= n())
+
+## get these many predictions from each of the models
+
+speaker_models_usfswow = left_join(speaker_models_usfswow, unique_clues)
+
+## correcting for plurals etc.
+
+models = speaker_models_usfswow %>% 
+  group_by(wordpair, Model) %>% top_n(uniqueclues_num+5, clue_sim) %>% 
+  select(wordpair, Model, clue, clue_sim)
+models = models %>% separate(wordpair, into = c("Word1", "Word2"))
+
+models = models %>% filter(!str_detect(clue, Word1) & 
+                             !str_detect(Word1, clue))
+
+models = models %>% filter(!str_detect(clue, Word2) & 
+                             !str_detect(Word2, clue))
+
+models$wordpair = paste(models$Word1, "-", models$Word2)
+
+models = models %>% arrange(wordpair, desc(clue_sim))
+
+models = left_join(models, unique_clues)
+
+
+topn_speaker = models %>% 
+  group_by(wordpair, Model) %>% top_n(uniqueclues_num, clue_sim) %>% 
+  select(wordpair, Model, clue, clue_sim)
+
+topn_collapsed <- aggregate(clue ~ wordpair+Model, data = topn_speaker, paste, collapse = ",")
+topn_wide = spread(topn_collapsed, Model, clue)
+
+
+
+## merge with c_clues
+
+c_clues = left_join(c_clues, topn_wide)
+
+## score
+c_clues$Clue1 = str_replace_all(c_clues$Clue1, regex("\\W+"), "")
+
+
+
+c_clues = c_clues %>% 
+  rowwise() %>% 
+  mutate(usf_s_4923 = 
+           as.numeric(str_detect(`USF-4923-Strength`, Clue1) | str_detect(Clue1, `USF-4923-Strength`)),
+         usf_ppmi_4923 = 
+           as.numeric(str_detect(`USF-4923-PPMI`, Clue1) | str_detect(Clue1, `USF-4923-PPMI`)),
+         usf_rw_4923 = 
+           as.numeric(str_detect(`USF-4923-RW`, Clue1) | str_detect(Clue1, `USF-4923-RW`)),
+         swow_s_r1_4923_s = 
+           as.numeric(str_detect(`SWOW-R1-4923-Strength`, Clue1) | str_detect(Clue1, `SWOW-R1-4923-Strength`)),
+         swow_s_r1_4923_ppmi = 
+           as.numeric(str_detect(`SWOW-R1-4923-PPMI`, Clue1) | str_detect(Clue1, `SWOW-R1-4923-PPMI`)),
+         swow_s_r1_4923_rw = as.numeric(str_detect(`SWOW-R1-4923-RW`, Clue1) | str_detect(Clue1, `SWOW-R1-4923-RW`)),
+         swow_s_r1_12217_s = 
+           as.numeric(str_detect(`SWOW-R1-12217-Strength`, Clue1) | str_detect(Clue1, `SWOW-R1-12217-Strength`)),
+         swow_s_r1_12217_ppmi = 
+           as.numeric(str_detect(`SWOW-R1-12217-PPMI`, Clue1) | str_detect(Clue1, `SWOW-R1-12217-PPMI`)),
+         swow_s_r1_12217_rw = as.numeric(str_detect(`SWOW-R1-12217-RW`, Clue1) | str_detect(Clue1, `SWOW-R1-12217-RW`)),
+         swow_s_r123_4923_s = 
+           as.numeric(str_detect(`SWOW-R123-4923-Strength`, Clue1) | str_detect(Clue1, `SWOW-R123-4923-Strength`)),
+         swow_s_r123_4923_ppmi = 
+           as.numeric(str_detect(`SWOW-R123-4923-PPMI`, Clue1) | str_detect(Clue1, `SWOW-R123-4923-PPMI`)),
+         swow_s_r123_4923_rw = as.numeric(str_detect(`SWOW-R123-4923-RW`, Clue1) | str_detect(Clue1, `SWOW-R123-4923-RW`)),
+         
+         swow_s_r123_12217_s = 
+           as.numeric(str_detect(`SWOW-Strength`, Clue1) | str_detect(Clue1, `SWOW-Strength`)),
+         swow_s_r123_12217_ppmi = 
+           as.numeric(str_detect(`SWOW-PPMI`, Clue1) | str_detect(Clue1, `SWOW-PPMI`)),
+         swow_s_r123_12217_rw = 
+           as.numeric(str_detect(`SWOW-RW`, Clue1) | str_detect(Clue1, `SWOW-RW`))
+         )
+
+topn_speaker_main = c_clues %>% select(wordpair, colnames(c_clues)[19:33])
+topn_speaker_main = gather(topn_speaker_main, Model, Accuracy,
+                          colnames(c_clues)[19:33])
+
+topn_speaker_main$Model = as.factor(topn_speaker_main$Model)
+contrasts(topn_speaker_main$Model) = contr.treatment(15, base = 5)
+
+
+topn_lme =glmer(data = topn_speaker_main, Accuracy ~ Model + (1|wordpair),
+                    family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+
+summary(topn_lme)
+
+topn_speaker_main_rmisc = Rmisc::summarySE(topn_speaker_main,
+                                    measurevar = "Accuracy",
+                                    groupvars = "Model", na.rm = TRUE)
+
+
+topn_speaker_main_rmisc
+```
+
+## Rank Correlations
+
+```{r}
+## can also obtain ranks for different responses based on "cosines"
+
+## get total participants per wordpair
+
+c_clues = read.csv("final_board_clues_all.csv", header = TRUE, sep = ",")
+
+sum_c_clues = c_clues %>% group_by(wordpair) %>%
+  summarise_at(vars(clueCount), sum)
+colnames(sum_c_clues) = c("wordpair", "total_n")
+
+c_clues = left_join(c_clues, sum_c_clues)
+c_clues$prob = c_clues$clueCount/c_clues$total_n
+
+## merge this with the RW/PPMI/Strength cosines
+rank_models = speaker_models_usfswow %>% select(wordpair, Model, clue, clue_sim)
+colnames(rank_models) = c("wordpair", "Model", "Clue1", "clue_sim")
+
+c_clues = left_join(c_clues, rank_models)
+c_clues = c_clues %>% filter(!is.na(Model))
+
+c_clues = spread(c_clues, Model, clue_sim)
+
+## set missing values to 0
+c_clues[is.na(c_clues)] = 0
+
+## rank these
+
+c_clues = c_clues %>% group_by(wordpair) %>%
+  dplyr::mutate(usf_strength_4923_rank  = dense_rank(`USF-4923-Strength`),
+                usf_PPMI_4923_rank  = dense_rank(`USF-4923-PPMI`),
+                usf_RW_4923_rank  = dense_rank(`USF-4923-RW`),
+                swowR1_strength_4923_rank  = dense_rank(`SWOW-R1-4923-Strength`),
+                swowR1_PPMI_4923_rank  = dense_rank(`SWOW-R1-4923-PPMI`),
+                swowR1_RW_4923_rank  = dense_rank(`SWOW-R1-4923-RW`),
+                swowR123_strength_4923_rank  = dense_rank(`SWOW-R123-4923-Strength`),
+                swowR123_PPMI_4923_rank  = dense_rank(`SWOW-R123-4923-PPMI`),
+                swowR123_RW_4923_rank  = dense_rank(`SWOW-R123-4923-RW`),
+                swowR123_strength_12217_rank  = dense_rank(`SWOW-Strength`),
+                swowR123_PPMI_12217_rank  = dense_rank(`SWOW-PPMI`),
+                swowR123_RW_12217_rank  = dense_rank(`SWOW-RW`),
+                swowR1_strength_12217_rank  = dense_rank(`SWOW-R1-12217-Strength`),
+                swowR1_PPMI_12217_rank  = dense_rank(`SWOW-R1-12217-PPMI`),
+                swowR1_RW_12217_rank  = dense_rank(`SWOW-R1-12217-RW`),
+         prob_rank = dense_rank(prob))
+
+## correlations done at the wordpair level
+
+ranks_func <- function(xx){
+return(expand.grid(
+USFprob_S = cor.test(xx$prob_rank,xx$usf_strength_4923_rank, method = "kendall")$estimate,
+USFprob_PPMI = cor.test(xx$prob_rank,xx$usf_PPMI_4923_rank, method = "kendall")$estimate,
+USFprob_RW = cor.test(xx$prob_rank,xx$usf_RW_4923_rank, method = "kendall")$estimate,
+
+SWOW_R1_4923_S = cor.test(xx$prob_rank,xx$swowR1_strength_4923_rank, method = "kendall")$estimate,
+SWOW_R1_4923_PPMI = cor.test(xx$prob_rank,xx$swowR1_PPMI_4923_rank, method = "kendall")$estimate,
+SWOW_R1_4923_RW = cor.test(xx$prob_rank,xx$swowR1_RW_4923_rank, method = "kendall")$estimate,
+
+SWOW_R123_4923_S = cor.test(xx$prob_rank,xx$swowR123_strength_4923_rank, method = "kendall")$estimate,
+SWOW_R123_4923_PPMI = cor.test(xx$prob_rank,xx$swowR123_PPMI_4923_rank, method = "kendall")$estimate,
+SWOW_R123_4923_RW = cor.test(xx$prob_rank,xx$swowR123_RW_4923_rank, method = "kendall")$estimate,
+
+SWOW_R123_12217_S = cor.test(xx$prob_rank,xx$swowR123_strength_12217_rank, method = "kendall")$estimate,
+SWOW_R123_12217_PPMI = cor.test(xx$prob_rank,xx$swowR123_PPMI_12217_rank, method = "kendall")$estimate,
+SWOW_R123_12217_RW = cor.test(xx$prob_rank,xx$swowR123_RW_12217_rank, method = "kendall")$estimate,
+
+SWOW_R1_12217_S = cor.test(xx$prob_rank,xx$swowR1_strength_12217_rank, method = "kendall")$estimate,
+SWOW_R1_12217_PPMI = cor.test(xx$prob_rank,xx$swowR1_PPMI_12217_rank, method = "kendall")$estimate,
+SWOW_R1_12217_RW = cor.test(xx$prob_rank,xx$swowR1_RW_12217_rank, method = "kendall")$estimate
+
+))
+}
+
+ranks_num = group_by(c_clues, wordpair ) %>% 
+  dplyr::summarise(wordpair_count = n())
+
+c_clues = left_join(c_clues, ranks_num)
+
+c_clues = c_clues %>% filter(wordpair_count > 1)
+
+require(plyr)
+cordata = ddply(c_clues, .(wordpair), ranks_func)
+
+
+cordata_long = gather(cordata, Model, Rank,
+                      colnames(cordata)[2:16])
+
+cordata_long_rmisc = Rmisc::summarySE(cordata_long, 
+                                measurevar = "Rank",
+                                groupvars = "Model", na.rm = TRUE)
+
+cordata_long_rmisc
+```
+
+
+# Semantic Relationships
+
+```{r}
+## obtain clue type
+c = read.csv("connector_maindata.csv", header = TRUE, sep = ",")
+library(tidyverse)
+c$wordpair = paste(c$Word1, "-", c$Word2)
+
+c_relationship = group_by( c, Experiment, Board,wordpair, Clue1, ClueType) %>%
+  dplyr::summarise(count = n())
+
+c_clues = group_by(c, Experiment, Board, wordpair, Clue1) %>%
+  dplyr::summarise(cluecount = n()) 
+
+c_clues_merged = left_join(c_clues, c_relationship) %>% distinct()
+
+## now we must find the all speaker scores for different relationships
+```
+
+## TABLE 6: ClueType Proportion
+
+```{r}
+c = read.csv("connector_maindata.csv", header = TRUE, sep = ",")
+library(tidyverse)
+c$wordpair = paste(c$Word1, "-", c$Word2)
+
+c_cluetype= group_by(c, ClueType ) %>%
+  dplyr::summarize(n = n())
+
+c_cluetype$total = sum(c_cluetype$n)
+
+c_cluetype$prop = c_cluetype$n/c_cluetype$total
+c_cluetype %>% arrange(desc(prop))
+
+```
+
+## Figure 2: Average Clue Score
+
+```{r}
+c_clues = group_by(c, wordpair, Clue1) %>%
+  dplyr::summarise(clueCount = n())
+
+## count total number of unique clues
+
+unique_clues = group_by(c_clues_merged, wordpair) %>%
+  dplyr::summarise(uniqueclues_num= n())
+
+## get these many predictions from each of the models
+speaker_models = read.csv("speaker_models.csv", header = TRUE, sep = ",") %>%
+      mutate(wordpair = paste(Word1, "-", Word2))
+
+speaker_models = left_join(speaker_models, unique_clues)
+
+## correcting for plurals etc.
+
+models = speaker_models %>% 
+  group_by(wordpair, Model) %>% top_n(uniqueclues_num+5, clue_sim) %>% 
+  select(wordpair, Model, clue, clue_sim)
+models = models %>% separate(wordpair, into = c("Word1", "Word2"))
+
+models = models %>% filter(!str_detect(clue, Word1) & 
+                             !str_detect(Word1, clue))
+
+models = models %>% filter(!str_detect(clue, Word2) & 
+                             !str_detect(Word2, clue))
+
+models$wordpair = paste(models$Word1, "-", models$Word2)
+
+models = models %>% arrange(wordpair, desc(clue_sim))
+
+models = left_join(models, unique_clues)
+
+topn_speaker = models %>% 
+  group_by(wordpair, Model) %>% top_n(uniqueclues_num, clue_sim) %>% 
+  select(wordpair, Model, clue, clue_sim)
+
+topn_collapsed <- aggregate(clue ~ wordpair+Model, data = topn_speaker, paste, collapse = ",")
+topn_wide = spread(topn_collapsed, Model, clue)
+
+
+
+## merge with c_clues
+c_clues_merged = left_join(c_clues, c_relationship) %>% distinct()
+
+
+c_clues_merged = left_join(c_clues_merged, topn_wide)
+
+## score
+c_clues_merged$Clue1 = str_replace_all(c_clues_merged$Clue1, regex("\\W+"), "")
+
+
+
+c_clues_merged = c_clues_merged %>% 
+  rowwise() %>% 
+  mutate(usf_s_acc = as.numeric(str_detect(`USF-Strength`, Clue1)),
+         usf_ppmi_acc = as.numeric(str_detect(`USF-PPMI`, Clue1)),
+         usf_rw_acc = as.numeric(str_detect(`USF-RW`, Clue1)),
+         swow_s_acc = as.numeric(str_detect(`SWOW-Strength`, Clue1)),
+         swow_ppmi_acc = as.numeric(str_detect(`SWOW-PPMI`, Clue1)),
+         swow_rw_acc = as.numeric(str_detect(`SWOW-RW`, Clue1)),
+         glove17_glove_acc = as.numeric(str_detect(`GloVe-2017`, Clue1) ),
+         word2vec17_word2vec_acc = as.numeric(str_detect(`word2vec-2017`, Clue1) ))
+
+## examples:
+
+View(c_clues_merged[which(c_clues_merged$wordpair == "chair - table"), 
+                    c("SWOW-RW","swow_rw_acc", "Clue1", 
+                      "word2vec-2017","word2vec17_word2vec_acc", "clueCount" )])
+## coordinate
+
+View(c_clues_merged[which(c_clues_merged$ClueType == "Coordinate"), 
+                    c("wordpair",  "Clue1", "clueCount", "word2vec17_word2vec_acc", "swow_rw_acc",
+                      "SWOW-RW", "word2vec-2017" )])
+
+
+topn_speaker_main = c_clues_merged %>% select(wordpair, ClueType, colnames(c_clues_merged)[16:23])
+topn_speaker_main = gather(topn_speaker_main, Model, Accuracy,
+                          colnames(c_clues_merged)[16:23])
+
+## rmisc
+
+
+topn_speaker_main = Rmisc::summarySE(topn_speaker_main,
+                                    measurevar = "Accuracy",
+                                    groupvars = c("ClueType", "Model"), na.rm = TRUE)
+
+
+
+topn_speaker_main = topn_speaker_main %>% filter(ClueType %in% c("Attributive",
+                                                                 "Locative", "Coordinate",
+                                            "Hierarchical"))
+
+topn_speaker_main = topn_speaker_main %>%
+  separate(Model, into = c("Model", "Type", "Acc"))
+
+topn_speaker_main$Model = toupper(topn_speaker_main$Model)
+
+topn_speaker_main$Model = ifelse(topn_speaker_main$Model == "GLOVE17", "GloVe",
+                                 topn_speaker_main$Model)
+topn_speaker_main$Model = ifelse(topn_speaker_main$Model == "WORD2VEC17", "word2vec",
+                                 topn_speaker_main$Model)
+topn_speaker_main$Type = toupper(topn_speaker_main$Type)
+topn_speaker_main$Type = ifelse(topn_speaker_main$Type == "GLOVE", "", topn_speaker_main$Type)
+topn_speaker_main$Type = ifelse(topn_speaker_main$Type == "WORD2VEC", "", topn_speaker_main$Type)
+topn_speaker_main$Model = paste(topn_speaker_main$Model, topn_speaker_main$Type, sep = "-")
+topn_speaker_main$Model = ifelse(topn_speaker_main$Model == "GloVe-","GloVe", 
+                                 topn_speaker_main$Model)
+topn_speaker_main$Model = ifelse(topn_speaker_main$Model == "word2vec-","word2vec", 
+                                 topn_speaker_main$Model)
+
+topn_speaker_main$Model = ordered(as.factor(topn_speaker_main$Model),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-S", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-S", "USF-PPMI", "USF-RW"
+                                              ))
+
+topn_speaker_main %>% 
+  filter(ClueType %in% c("Attributive", "Coordinate",
+                                            "Hierarchical", "Locative")) %>%
+  ggplot(aes(x = ClueType, y = Accuracy, 
+             group = Model, fill = Model)) + 
+   geom_bar(stat = "identity", position = "dodge", width = 0.7, color= "gray26")+
+ geom_errorbar(aes(ymin=Accuracy - se, ymax=Accuracy + se),
+             width=.01, color = "darkgray",
+             position = position_dodge(0.70))+
+ theme_few()+
+  scale_fill_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+       xlab("Semantic Relationship") + ylab("Average Prediction Score") +
+  ggtitle("Average Clue Score for Different Semantic\nRelationships between First Clue and Word pair")+
+  theme(aspect.ratio = 1)+
+   theme(axis.text.x = element_text(face = "bold", size = rel(1.2)),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+```
+
+## LME
+
+```{r}
+## lme relationship
+
+topn_speaker_main = c_clues_merged %>% select(wordpair, ClueType, colnames(c_clues_merged)[16:23])
+topn_speaker_main = gather(topn_speaker_main, Model, Accuracy,
+                          colnames(c_clues_merged)[16:23])
+
+topn_speaker_main = topn_speaker_main %>% filter(ClueType %in% c("Coordinate",
+  "Hierarchical", "Locative", "Attributive"))
+
+relationship_lme = glmer(data = topn_speaker_main, Accuracy ~ Model*ClueType +
+                           (1|wordpair), family = "binomial",
+                         control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+car::Anova(relationship_lme)
+sjPlot::plot_model(relationship_lme, type = "int")
+
+```
+
+
+# TABLE 7: Guesser Score
+
+```{r}
+c = read.csv("connector_maindata.csv", header = TRUE, sep = ",")
+library(tidyverse)
+c$wordpair = paste(c$Word1, "-", c$Word2)
+
+guess = c %>% select(Experiment, Board, Subject, Trial, wordpair, Clue1, P2W1, P2W2)
+
+guess = guess %>% distinct()
+
+
+## input model predictions:
+
+guesser_models = read.csv("guesser_models_final.csv", header = TRUE, sep = ",")
+
+guesser_models  = guesser_models %>% distinct()
+
+guesser_models = guesser_models %>% separate(dist_guess, into = c("Guess_W1", "Guess_W2"))
+guesser_models = guesser_models %>% select(Experiment, Board, clue, Model, Guess_W1, Guess_W2)
+colnames(guesser_models) = c("Experiment","Board", "Clue1", "Model","Guess_W1", "Guess_W2")
+
+guesser_models  = guesser_models %>% distinct()
+
+
+## merge with guess
+
+guess = left_join(guess, guesser_models)
+
+
+guess = guess %>% 
+  rowwise() %>% 
+  mutate(w1_score = as.numeric(str_detect(Guess_W1, P2W1) | str_detect(Guess_W2, P2W1)),
+         w2_score = as.numeric(str_detect(Guess_W1, P2W2) | str_detect(Guess_W2, P2W2)))
+
+guess$guess_score = guess$w1_score + guess$w2_score
+
+guess_main = guess %>% select(Experiment, Board, Subject, Trial, 
+                              Clue1, P2W1, P2W2, Model, guess_score)
+
+
+#View(guess_main[which(is.na(guess_main$guess_score)),])
+
+## remove missing predictions -- correspond to  proper names 
+
+guess_main = guess_main %>% filter(!is.na(guess_score))
+
+score_guess = group_by(guess_main, Subject, Model) %>%
+  summarise_at(vars(guess_score), sum)
+## each participant had 30 pairs, i.e. 60 opportunities
+score_guess$main_score = score_guess$guess_score/60
+
+scores_rmisc = Rmisc::summarySE(score_guess,
+                                measurevar = "main_score",
+                                groupvars = "Model")
+
+scores_rmisc
+
+score_guess$Model = as.factor(score_guess$Model)
+contrasts(score_guess$Model)= contr.treatment(8, base = 8)
+
+
+guess_lme = lmerTest::lmer(data = score_guess, main_score ~ Model + (1|Subject))
+summary(guess_lme)
+
+
+
+## example
+
+View(guess[which(guess$wordpair == "lion - tiger"),])
+View(guess[which(guess$wordpair == "war - quiet"),])
+```
+
+# Regression Models
+
+## TABLE 8: Guesser Accuracy
+
+```{r}
+c$swow_rw_avg_c1_w1w2 = (c$swow_rw_c1w1_sim + c$swow_rw_c1w2_sim)/2
+c$usf_s_avg_c1_w1w2 = (c$usf_s_c1w1_sim + c$usf_s_c1w2_sim)/2
+c$usf_ppmi_avg_c1_w1w2 = (c$usf_ppmi_c1w1_sim + c$usf_ppmi_c1w2_sim)/2
+c$usf_rw_avg_c1_w1w2 = (c$usf_rw_c1w1_sim + c$usf_rw_c1w2_sim)/2
+c$swow_s_avg_c1_w1w2 = (c$swow_s_c1w1_sim + c$swow_s_c1w2_sim)/2
+c$swow_ppmi_avg_c1_w1w2 = (c$swow_ppmi_c1w1_sim + c$swow_ppmi_c1w2_sim)/2
+c$word2vec_avg_c1_w1w2 = (c$word2vec2017_c1w1_sim + c$word2vec2017_c1w2_sim)/2
+c$glove_avg_c1_w1w2 = (c$glove2017_c1w1_sim + c$glove2017_c1w2_sim)/2
+
+
+library(lme4)
+p2_acc_elp = glmer(data = c, 
+                        Player2.ACC ~  
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial")
+summary(p2_acc_elp)
+car::Anova(p2_acc_elp)
+MuMIn::r.squaredGLMM(p2_acc_elp)
+
+library(boot)
+
+glmer_rsq <- function(formula, data, indices) {
+  d <- data[indices,] 
+  model.fit <- glmer(formula, family = "binomial", data = d)
+  fit.r.squared <- MuMIn::r.squaredGLMM(model.fit)
+  return(fit.r.squared[2,1])
+}
+
+set.seed(301)
+# takes a while to run and may return different estimates from original paper simulations
+# due to random boot samples, but mean R2 should be same as reported
+elpresults <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+elpresults
+plot(elpresults)
+boot.ci(elpresults, type="norm")
+
+
+p2_acc_glove = glmer(data = c, 
+                        Player2.ACC ~  glove_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_glove)
+car::Anova(p2_acc_glove)
+MuMIn::r.squaredGLMM(p2_acc_glove)
+
+gloveresults <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          glove_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+gloveresults
+plot(gloveresults)
+boot.ci(gloveresults, type="norm")
+
+
+p2_acc_word2vec = glmer(data = c, 
+                        Player2.ACC ~  word2vec_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_word2vec)
+car::Anova(p2_acc_word2vec)
+MuMIn::r.squaredGLMM(p2_acc_word2vec)
+
+w2vresults <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          word2vec_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+w2vresults
+plot(w2vresults)
+boot.ci(w2vresults, type="norm")
+
+p2_acc_usf_s = glmer(data = c, 
+                        Player2.ACC ~  usf_s_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_usf_s)
+car::Anova(p2_acc_usf_s)
+MuMIn::r.squaredGLMM(p2_acc_usf_s)
+
+usf_s_results <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          usf_s_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+usf_s_results
+plot(usf_s_results)
+boot.ci(usf_s_results, type="norm")
+
+p2_acc_usf_ppmi = glmer(data = c, 
+                        Player2.ACC ~  usf_ppmi_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_usf_ppmi)
+car::Anova(p2_acc_usf_ppmi)
+MuMIn::r.squaredGLMM(p2_acc_usf_ppmi)
+
+usf_ppmi_results <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          usf_ppmi_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+usf_ppmi_results
+plot(usf_ppmi_results)
+boot.ci(usf_ppmi_results, type="norm")
+
+p2_acc_usf_rw = glmer(data = c, 
+                        Player2.ACC ~  usf_rw_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_usf_rw)
+car::Anova(p2_acc_usf_rw)
+MuMIn::r.squaredGLMM(p2_acc_usf_rw)
+
+usf_rw_results <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          usf_rw_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+usf_rw_results
+plot(usf_rw_results)
+boot.ci(usf_rw_results, type="norm")
+
+## swow
+
+p2_acc_swow_s = glmer(data = c, 
+                        Player2.ACC ~  swow_s_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_swow_s)
+car::Anova(p2_acc_swow_s)
+MuMIn::r.squaredGLMM(p2_acc_swow_s)
+
+swow_s_results <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          swow_s_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+swow_s_results
+plot(swow_s_results)
+boot.ci(swow_s_results, type="norm")
+
+p2_acc_swow_ppmi = glmer(data = c, 
+                        Player2.ACC ~  swow_ppmi_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_swow_ppmi)
+car::Anova(p2_acc_swow_ppmi)
+MuMIn::r.squaredGLMM(p2_acc_swow_ppmi)
+
+swow_ppmi_results <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          swow_ppmi_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+swow_ppmi_results
+plot(swow_ppmi_results)
+boot.ci(swow_ppmi_results, type="norm")
+
+p2_acc_swow_rw = glmer(data = c, 
+                        Player2.ACC ~  swow_rw_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_acc_swow_rw)
+car::Anova(p2_acc_swow_rw)
+MuMIn::r.squaredGLMM(p2_acc_swow_rw)
+
+swow_rw_results <- boot(data=c, statistic=glmer_rsq,
+                R=1000, formula= (Player2.ACC ~  
+                          swow_rw_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+swow_rw_results
+plot(swow_rw_results)
+boot.ci(swow_rw_results, type="norm")
+
+
+```
+
+### Figure 3
+```{r}
+main_p2acc_data = c %>% select(wordpair, Clue1, Player2.ACC,
+                                      swow_rw_avg_c1_w1w2,swow_ppmi_avg_c1_w1w2,
+                                   swow_s_avg_c1_w1w2, usf_rw_avg_c1_w1w2, usf_s_avg_c1_w1w2,
+                                   usf_ppmi_avg_c1_w1w2, glove_avg_c1_w1w2, word2vec_avg_c1_w1w2
+                                   )
+
+main_p2acc_data = gather(main_p2acc_data, Model, AvgSimilarity, 
+                       swow_rw_avg_c1_w1w2,swow_ppmi_avg_c1_w1w2,
+                                   swow_s_avg_c1_w1w2, usf_rw_avg_c1_w1w2, usf_s_avg_c1_w1w2,
+                                   usf_ppmi_avg_c1_w1w2, glove_avg_c1_w1w2, word2vec_avg_c1_w1w2)
+
+main_p2acc_data_avg = group_by(main_p2acc_data, wordpair, Model) %>%
+  summarise_at(vars(Player2.ACC, AvgSimilarity), mean, na.rm = TRUE)
+
+main_p2acc_data_avg = main_p2acc_data_avg %>% 
+  separate(Model, into = c("Model", "Type", "avg", "c1","w1w2"))
+
+main_p2acc_data_avg$Model = toupper(main_p2acc_data_avg$Model)
+main_p2acc_data_avg$Type = toupper(main_p2acc_data_avg$Type)
+
+main_p2acc_data_avg$Model = ifelse(main_p2acc_data_avg$Model == "GLOVE", "GloVe", 
+                                 main_p2acc_data_avg$Model)
+main_p2acc_data_avg$Model = ifelse(main_p2acc_data_avg$Model == "WORD2VEC", "word2vec", 
+                                 main_p2acc_data_avg$Model)
+
+main_p2acc_data_avg$Type = ifelse(main_p2acc_data_avg$Type == "AVG", "", main_p2acc_data_avg$Type)
+main_p2acc_data_avg$Model = paste(main_p2acc_data_avg$Model, main_p2acc_data_avg$Type, sep= "-")
+main_p2acc_data_avg$Model = ifelse(main_p2acc_data_avg$Model == "GloVe-", "GloVe", main_p2acc_data_avg$Model)
+
+main_p2acc_data_avg$Model = ifelse(main_p2acc_data_avg$Model == "word2vec-", "word2vec", main_p2acc_data_avg$Model)
+
+main_p2acc_data_avg$Model = ordered(as.factor(main_p2acc_data_avg$Model),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-S", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-S", "USF-PPMI", "USF-RW"
+                                              ))
+
+main_p2acc_data_avg %>% 
+  ggplot(aes(x = AvgSimilarity, y = Player2.ACC,
+             group = Model, color = Model)) +  
+  geom_point( color = "darkslategray", alpha = 0.4)+
+  geom_smooth(method = "lm", se = FALSE)+
+ theme_few()+
+scale_color_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+       xlab("Cosine Similarity between Clue and Word Pair") + 
+  ylab("Mean Guesser Accuracy") + 
+  ggtitle("Predicting Guesser Accuracy")  +
+          theme(aspect.ratio = 1)+
+   theme(axis.text = element_text(size = rel(1)),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+```
+
+## Speaker z-RTs
+
+```{r}
+c_firsttrim = c %>% filter(Player1.RT > 250 & Player1.RT < 120000 )
+
+((nrow(c)-nrow(c_firsttrim))/nrow(c))*100
+
+## first we remove all RTs above and below mean+-3sd
+
+## aggregate per subject all IVs and DVs
+meanRT = group_by(c_firsttrim, Subject) %>%
+  summarise_at(vars(Player1.RT), mean)
+colnames(meanRT) = c("Subject", "MeanRTTarget")
+
+sdRT = group_by(c_firsttrim, Subject) %>%
+  summarise_at(vars(Player1.RT), sd)
+colnames(sdRT) = c("Subject", "sdRTTarget")
+
+RT_agg = merge(meanRT, sdRT, by = "Subject")
+
+## merge aggregate info with long data
+c_z = merge(c_firsttrim, RT_agg, by = "Subject", all.x = T)
+
+## person and grand-mean centered scores using original and aggregate
+library(dplyr)
+c_z = c_z %>% mutate(zP1 = (Player1.RT - MeanRTTarget)/sdRTTarget)
+                 
+## checking: subject level means should be zero
+
+sub_pic = group_by(c_z, Subject) %>%
+  summarise_at(vars(zP1), mean)
+
+c_z_trimmed = subset(c_z, c_z$zP1 < 3 &
+                               c_z$zP1 > -3)
+
+((nrow(c) - nrow(c_z_trimmed))/nrow(c))*100
+
+## Next we create z-RTs from these remaining data
+
+## aggregate per subject all IVs and DVs
+meanRT_trim = group_by(c_z_trimmed, Subject) %>%
+  summarise_at(vars(Player1.RT), mean)
+colnames(meanRT_trim) = c("Subject", "MeanRT_trim")
+
+sdRT_trim = group_by(c_z_trimmed, Subject) %>%
+  summarise_at(vars(Player1.RT), sd)
+colnames(sdRT_trim) = c("Subject", "sdRT_trim")
+
+RT_agg_trim = merge(meanRT_trim, sdRT_trim, by = "Subject")
+
+## merge aggregate info with long data
+new_c_z = merge(c_z_trimmed, 
+                        RT_agg_trim, by = "Subject", all.x = T)
+
+## person and grand-mean centered scores using original and aggregate
+library(dplyr)
+new_c_z = new_c_z %>% 
+  mutate(zP1_final = (Player1.RT - MeanRT_trim)/sdRT_trim)
+                 
+## checking: subject level means should be zero
+
+sub_pic = group_by(new_c_z, Subject) %>%
+  summarise_at(vars(zP1_final), mean)
+```
+
+### TABLE 9: Models
+
+```{r}
+library(lme4)
+
+library(boot)
+
+lmer_rsq <- function(formula, data, indices) {
+  d <- data[indices,] 
+  model.fit <- lmer(formula, data = d,
+                    control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+  fit.r.squared <- MuMIn::r.squaredGLMM(model.fit)
+  return(fit.r.squared[1,1])
+}
+
+
+p1_clue_elp = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                        (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_elp)
+car::Anova(p1_clue_elp)
+MuMIn::r.squaredGLMM(p1_clue_elp)
+
+set.seed(301)
+s1_elpresults <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_elpresults
+plot(s1_elpresults)
+boot.ci(s1_elpresults, type="norm")
+
+p1_clue_glove = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      glove2017_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_glove)
+car::Anova(p1_clue_glove)
+MuMIn::r.squaredGLMM(p1_clue_glove)
+
+set.seed(301)
+s1_gloveresults <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ glove2017_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_gloveresults
+plot(s1_gloveresults)
+boot.ci(s1_gloveresults, type="norm")
+
+p1_clue_word2vec = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      word2vec2017_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_word2vec)
+car::Anova(p1_clue_word2vec)
+MuMIn::r.squaredGLMM(p1_clue_word2vec)
+
+set.seed(301)
+s1_w2vresults <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ word2vec2017_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_w2vresults
+plot(s1_w2vresults)
+boot.ci(s1_w2vresults, type="norm")
+
+p1_clue_usf_s = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      usf_s_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_usf_s)
+car::Anova(p1_clue_usf_s)
+MuMIn::r.squaredGLMM(p1_clue_usf_s)
+
+set.seed(301)
+s1_usf_s_results <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ usf_s_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_usf_s_results
+plot(s1_usf_s_results)
+boot.ci(s1_usf_s_results, type="norm")
+
+p1_clue_usf_ppmi = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      usf_ppmi_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_usf_ppmi)
+car::Anova(p1_clue_usf_ppmi)
+MuMIn::r.squaredGLMM(p1_clue_usf_ppmi)
+
+set.seed(301)
+s1_usf_ppmi_results <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ usf_ppmi_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_usf_ppmi_results
+plot(s1_usf_ppmi_results)
+boot.ci(s1_usf_ppmi_results, type="norm")
+
+p1_clue_usf_rw = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      usf_rw_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_usf_rw)
+car::Anova(p1_clue_usf_rw)
+MuMIn::r.squaredGLMM(p1_clue_usf_rw)
+
+set.seed(301)
+s1_usf_rw_results <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ usf_rw_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_usf_rw_results
+plot(s1_usf_rw_results)
+boot.ci(s1_usf_rw_results, type="norm")
+
+p1_clue_swow_s = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      swow_s_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_swow_s)
+car::Anova(p1_clue_swow_s)
+MuMIn::r.squaredGLMM(p1_clue_swow_s)
+
+set.seed(301)
+s1_swow_s_results <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ swow_s_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_swow_s_results
+plot(s1_swow_s_results)
+boot.ci(s1_swow_s_results, type="norm")
+
+p1_clue_swow_ppmi = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      swow_ppmi_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_swow_ppmi)
+car::Anova(p1_clue_swow_ppmi)
+MuMIn::r.squaredGLMM(p1_clue_swow_ppmi)
+
+set.seed(301)
+s1_swow_ppmi_results <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ swow_ppmi_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_swow_ppmi_results
+plot(s1_swow_ppmi_results)
+boot.ci(s1_swow_ppmi_results, type="norm")
+
+p1_clue_swow_rw = lmerTest::lmer(data = new_c_z,
+                        zP1_final ~ w1w2_length + w1w2_conc + w1w2_freq +
+                      swow_rw_w1w2_sim + (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p1_clue_swow_rw)
+car::Anova(p1_clue_swow_rw)
+MuMIn::r.squaredGLMM(p1_clue_swow_rw)
+
+set.seed(301)
+s1_swow_rw_results <- boot(data=new_c_z, statistic=lmer_rsq,
+                R=1000, formula= (zP1_final ~ swow_rw_w1w2_sim +
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                            (1|wordpair )))
+
+s1_swow_rw_results
+plot(s1_swow_rw_results)
+boot.ci(s1_swow_rw_results, type="norm")
+
+```
+
+### Figure 4
+
+```{r}
+## raw data plot
+library(ggthemes)
+library(ggplot2)
+main_zrt_data = new_c_z %>% select(wordpair, Clue1, zP1_final, swow_rw_w1w2_sim,swow_ppmi_w1w2_sim,
+                                   swow_s_w1w2_sim, usf_rw_w1w2_sim, usf_ppmi_w1w2_sim,
+                                   usf_s_w1w2_sim, glove2017_w1w2_sim, word2vec2017_w1w2_sim
+                                   )
+
+main_zrt_data = gather(main_zrt_data, Model, Similarity, 
+                       swow_rw_w1w2_sim,swow_ppmi_w1w2_sim,
+                                   swow_s_w1w2_sim, usf_rw_w1w2_sim, usf_ppmi_w1w2_sim,
+                                   usf_s_w1w2_sim, glove2017_w1w2_sim, word2vec2017_w1w2_sim)
+
+main_zrt_data_avg = group_by(main_zrt_data, wordpair, Model) %>%
+  summarise_at(vars(zP1_final, Similarity), mean)
+
+main_zrt_data_avg = main_zrt_data_avg %>% separate(Model, into = c("Model", "Type", "w1w2", "sim"))
+main_zrt_data_avg$Model = toupper(main_zrt_data_avg$Model)
+main_zrt_data_avg$Type = toupper(main_zrt_data_avg$Type)
+
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "GLOVE2017", "GloVe", 
+                                 main_zrt_data_avg$Model)
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "WORD2VEC2017", "word2vec", 
+                                 main_zrt_data_avg$Model)
+
+main_zrt_data_avg$Type = ifelse(main_zrt_data_avg$Type == "W1W2", "", main_zrt_data_avg$Type)
+main_zrt_data_avg$Model = paste(main_zrt_data_avg$Model, main_zrt_data_avg$Type, sep= "-")
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "GloVe-", "GloVe", main_zrt_data_avg$Model)
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "word2vec-", "word2vec", main_zrt_data_avg$Model)
+
+
+main_zrt_data_avg$Model = ordered(as.factor(main_zrt_data_avg$Model),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-S", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-S", "USF-PPMI", "USF-RW"
+                                              ))
+
+
+main_zrt_data_avg %>% 
+  ggplot(aes(x = Similarity, y = zP1_final,
+             group = Model, color = Model)) +  
+  geom_point( color = "darkslategray", alpha = 0.4)+
+  geom_smooth(method = "lm", se = FALSE)+
+ theme_few()+
+scale_color_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+       xlab("Semantic Relationship") + ylab("Average Prediction Score") +      
+  xlab("Cosine Similarity between Target Words") + 
+  ylab("Mean z-RT to Generate Clue") + 
+  ggtitle("Predicting Speaker z-RTs")  +
+  theme(aspect.ratio = 1)+
+   theme(axis.text = element_text(size = rel(1)),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+
+```
+
+
+## TABLE 10: Guesser z-RTs
+
+```{r}
+
+
+## trimming
+c_firsttrim_p2 = c %>% filter(Player2.RT > 250 &  
+                                             Player2.RT < 120000)
+## aggregate per subject all IVs and DVs
+meanRT = group_by(c_firsttrim_p2, Subject) %>%
+  summarise_at(vars(Player2.RT), mean)
+colnames(meanRT) = c("Subject", "MeanRTTarget")
+
+sdRT = group_by(c_firsttrim_p2, Subject) %>%
+  summarise_at(vars(Player2.RT), sd)
+colnames(sdRT) = c("Subject", "sdRTTarget")
+
+RT_agg = merge(meanRT, sdRT, by = "Subject")
+
+## merge aggregate info with long data
+c_z = merge(c_firsttrim_p2, RT_agg, by = "Subject", all.x = T)
+
+## person and grand-mean centered scores using original and aggregate
+library(dplyr)
+c_z = c_z %>% mutate(zP2 = (Player2.RT - MeanRTTarget)/sdRTTarget)
+                 
+## checking: subject level means should be zero
+
+sub_pic = group_by(c_z, Subject) %>%
+  summarise_at(vars(zP2), mean)
+
+c_z_trimmed = subset(c_z, c_z$zP2 < 3 &
+                               c_z$zP2 > -3)
+
+((nrow(c)-nrow(c_z_trimmed))/nrow(c))*100
+
+## aggregate per subject all IVs and DVs
+meanRT_trim = group_by(c_z_trimmed, Subject) %>%
+  summarise_at(vars(Player2.RT), mean)
+colnames(meanRT_trim) = c("Subject", "MeanRT_trim")
+
+sdRT_trim = group_by(c_z_trimmed, Subject) %>%
+  summarise_at(vars(Player2.RT), sd)
+colnames(sdRT_trim) = c("Subject", "sdRT_trim")
+
+RT_agg_trim = merge(meanRT_trim, sdRT_trim, by = "Subject")
+
+## merge aggregate info with long data
+new_c_z_p2 = merge(c_z_trimmed, 
+                        RT_agg_trim, by = "Subject", all.x = T)
+
+## person and grand-mean centered scores using original and aggregate
+library(dplyr)
+new_c_z_p2 = new_c_z_p2 %>% 
+  mutate(zP2_final = (Player2.RT - MeanRT_trim)/sdRT_trim)
+                 
+## checking: subject level means should be zero
+
+sub_pic = group_by(new_c_z_p2, Subject) %>%
+  summarise_at(vars(zP2_final), mean)
+```
+
+### TABLE 10: Models
+
+```{r}
+library(lme4)
+p2_clue_lm_zRT_elp = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ 
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_elp)
+car::Anova(p2_clue_lm_zRT_elp)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_elp)
+
+set.seed(301)
+g1_elpresults <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_elpresults
+plot(g1_elpresults)
+boot.ci(g1_elpresults, type="norm")
+
+p2_clue_lm_zRT_glove = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ glove_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_glove)
+car::Anova(p2_clue_lm_zRT_glove)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_glove)
+
+set.seed(301)
+g1_glove_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ glove_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_glove_results
+plot(g1_glove_results)
+boot.ci(g1_glove_results, type="norm")
+
+p2_clue_lm_zRT_word2vec = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ word2vec_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_word2vec)
+car::Anova(p2_clue_lm_zRT_word2vec)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_word2vec)
+
+set.seed(301)
+g1_word2vec_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ word2vec_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_word2vec_results
+plot(g1_word2vec_results)
+boot.ci(g1_word2vec_results, type="norm")
+
+
+p2_clue_lm_zRT_usf_s = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ usf_s_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_usf_s)
+car::Anova(p2_clue_lm_zRT_usf_s)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_usf_s)
+
+set.seed(301)
+g1_usf_s_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ usf_s_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_usf_s_results
+plot(g1_usf_s_results)
+boot.ci(g1_usf_s_results, type="norm")
+
+
+p2_clue_lm_zRT_usf_ppmi = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ usf_ppmi_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_usf_ppmi)
+car::Anova(p2_clue_lm_zRT_usf_ppmi)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_usf_ppmi)
+
+set.seed(301)
+g1_usf_ppmi_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ usf_ppmi_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_usf_ppmi_results
+plot(g1_usf_ppmi_results)
+boot.ci(g1_usf_ppmi_results, type="norm")
+
+
+p2_clue_lm_zRT_usf_rw = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ usf_rw_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_usf_rw)
+car::Anova(p2_clue_lm_zRT_usf_rw)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_usf_rw)
+
+set.seed(301)
+g1_usf_rw_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ usf_rw_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_usf_rw_results
+plot(g1_usf_rw_results)
+boot.ci(g1_usf_rw_results, type="norm")
+
+
+## swow
+
+
+p2_clue_lm_zRT_swow_s = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ swow_s_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_swow_s)
+car::Anova(p2_clue_lm_zRT_swow_s)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_swow_s)
+
+set.seed(301)
+g1_swow_s_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ swow_s_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_swow_s_results
+plot(g1_swow_s_results)
+boot.ci(g1_swow_s_results, type="norm")
+
+
+p2_clue_lm_zRT_swow_ppmi = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ swow_ppmi_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_swow_ppmi)
+car::Anova(p2_clue_lm_zRT_swow_ppmi)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_swow_ppmi)
+
+set.seed(301)
+g1_swow_ppmi_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ swow_ppmi_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_swow_ppmi_results
+plot(g1_swow_ppmi_results)
+boot.ci(g1_swow_ppmi_results, type="norm")
+
+
+p2_clue_lm_zRT_swow_rw = lmerTest::lmer(data = new_c_z_p2, 
+                        zP2_final ~ swow_rw_avg_c1_w1w2 +
+                          w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                           (1|wordpair),
+                          control=lmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(p2_clue_lm_zRT_swow_rw)
+car::Anova(p2_clue_lm_zRT_swow_rw)
+MuMIn::r.squaredGLMM(p2_clue_lm_zRT_swow_rw)
+
+set.seed(301)
+g1_swow_rw_results <- boot(data=new_c_z_p2, statistic=lmer_rsq,
+                R=1000, formula= (zP2_final ~ swow_rw_avg_c1_w1w2 + 
+                                    w1w2_length + w1w2_conc + w1w2_freq +
+                          clue_length + clue_conc + clue_freq +
+                            (1|wordpair )))
+
+g1_swow_rw_results
+plot(g1_swow_rw_results)
+boot.ci(g1_swow_rw_results, type="norm")
+
+## overall correlation of Speaker-Guesser RTs
+
+Hmisc::rcorr(c$Player1.RT, c$Player2.RT)
+
+
+
+```
+
+### Figure 5
+
+```{r}
+main_zrt_data = new_c_z_p2 %>% select(wordpair, Clue1, zP2_final,
+                                      swow_rw_avg_c1_w1w2,swow_ppmi_avg_c1_w1w2,
+                                   swow_s_avg_c1_w1w2, usf_rw_avg_c1_w1w2, usf_s_avg_c1_w1w2,
+                                   usf_ppmi_avg_c1_w1w2, glove_avg_c1_w1w2, word2vec_avg_c1_w1w2
+                                   )
+
+main_zrt_data = gather(main_zrt_data, Model, AvgSimilarity, 
+                       swow_rw_avg_c1_w1w2,swow_ppmi_avg_c1_w1w2,
+                                   swow_s_avg_c1_w1w2, usf_rw_avg_c1_w1w2, usf_s_avg_c1_w1w2,
+                                   usf_ppmi_avg_c1_w1w2, glove_avg_c1_w1w2, word2vec_avg_c1_w1w2)
+
+main_zrt_data_avg = group_by(main_zrt_data, wordpair, Model) %>%
+  summarise_at(vars(zP2_final, AvgSimilarity), mean, na.rm = TRUE)
+
+main_zrt_data_avg = main_zrt_data_avg %>% separate(Model, into = c("Model", "Type", "avg", "c1",
+                                                                  "w1w2"))
+main_zrt_data_avg$Model = toupper(main_zrt_data_avg$Model)
+main_zrt_data_avg$Type = toupper(main_zrt_data_avg$Type)
+
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "GLOVE", "GloVe", 
+                                 main_zrt_data_avg$Model)
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "WORD2VEC", "word2vec", 
+                                 main_zrt_data_avg$Model)
+
+main_zrt_data_avg$Type = ifelse(main_zrt_data_avg$Type == "AVG", "", main_zrt_data_avg$Type)
+main_zrt_data_avg$Model = paste(main_zrt_data_avg$Model, main_zrt_data_avg$Type, sep= "-")
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "GloVe-", "GloVe", main_zrt_data_avg$Model)
+main_zrt_data_avg$Model = ifelse(main_zrt_data_avg$Model == "word2vec-", "word2vec", main_zrt_data_avg$Model)
+
+main_zrt_data_avg$Model = ordered(as.factor(main_zrt_data_avg$Model),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-S", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-S", "USF-PPMI", "USF-RW"
+                                              ))
+
+
+
+main_zrt_data_avg %>% 
+  ggplot(aes(x = AvgSimilarity, y = zP2_final,
+             group = Model, color = Model)) +  
+  geom_point( color = "darkslategray", alpha = 0.4)+
+  geom_smooth(method = "lm", se = FALSE)+
+ theme_few()+
+scale_color_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+  xlab("Cosine Similarity between Clue and Word Pair") + 
+  ylab("Mean z-RT to Generate Guesses") + 
+  ggtitle("Predicting Guesser z-RTs")  +
+  theme(aspect.ratio = 1)+
+   theme(axis.text = element_text(size = rel(1)),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+```
+
+
+
+# Second Attempt Performance
+
+## Figure 6
+
+```{r}
+c = read.csv("connector_maindata.csv", header = TRUE, sep = ",")
+library(tidyverse)
+c$wordpair = paste(c$Word1, "-", c$Word2)
+
+
+clue2_main = c %>%
+  filter(Clue2 != "na" & Clue2 != "") %>%
+  rowwise() %>% 
+  mutate(w1_guessed = as.numeric(str_detect(Word1, P2W1) | str_detect(Word1, P2W2)),
+         w2_guessed = as.numeric(str_detect(Word2, P2W1) | str_detect(Word2, P2W2)),
+         A1PartCorrect = ifelse( (w1_guessed == 1 & w2_guessed == 0), "w2 incorrect",
+                                 ifelse((w1_guessed == 0 & w2_guessed == 1),
+                                     "w1 incorrect", "both incorrect"))) %>%
+  filter(A1PartCorrect != "both incorrect")
+  
+## glove
+clue2_main$glove_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$glove2017_c2w1_sim, clue2_main$glove2017_c2w2_sim)
+clue2_main$glove_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$glove2017_c2w1_sim, clue2_main$glove2017_c2w2_sim)
+clue2_main$glove_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$glove2017_c1w1_sim, clue2_main$glove2017_c1w2_sim)
+clue2_main$glove_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$glove2017_c1w1_sim, clue2_main$glove2017_c1w2_sim)
+
+## word2vec
+clue2_main$word2vec_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$word2vec2017_c2w1_sim, clue2_main$word2vec2017_c2w2_sim)
+clue2_main$word2vec_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$word2vec2017_c2w1_sim, clue2_main$word2vec2017_c2w2_sim)
+clue2_main$word2vec_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$word2vec2017_c1w1_sim, clue2_main$word2vec2017_c1w2_sim)
+clue2_main$word2vec_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$word2vec2017_c1w1_sim, clue2_main$word2vec2017_c1w2_sim)
+
+## swow_s
+clue2_main$swow_s_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$swow_s_c2w1_sim, clue2_main$swow_s_c2w2_sim)
+clue2_main$swow_s_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$swow_s_c2w1_sim, clue2_main$swow_s_c2w2_sim)
+clue2_main$swow_s_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$swow_s_c1w1_sim, clue2_main$swow_s_c1w2_sim)
+clue2_main$swow_s_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$swow_s_c1w1_sim, clue2_main$swow_s_c1w2_sim)
+## swow_ppmi
+clue2_main$swow_ppmi_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$swow_ppmi_c2w1_sim, clue2_main$swow_ppmi_c2w2_sim)
+clue2_main$swow_ppmi_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$swow_ppmi_c2w1_sim, clue2_main$swow_ppmi_c2w2_sim)
+clue2_main$swow_ppmi_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$swow_ppmi_c1w1_sim, clue2_main$swow_ppmi_c1w2_sim)
+clue2_main$swow_ppmi_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$swow_ppmi_c1w1_sim, clue2_main$swow_ppmi_c1w2_sim)
+
+## swow_rw
+clue2_main$swow_rw_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$swow_rw_c2w1_sim, clue2_main$swow_rw_c2w2_sim)
+clue2_main$swow_rw_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$swow_rw_c2w1_sim, clue2_main$swow_rw_c2w2_sim)
+clue2_main$swow_rw_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$swow_rw_c1w1_sim, clue2_main$swow_rw_c1w2_sim)
+clue2_main$swow_rw_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$swow_rw_c1w1_sim, clue2_main$swow_rw_c1w2_sim)
+
+## usf_s
+clue2_main$usf_s_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$usf_s_c2w1_sim, clue2_main$usf_s_c2w2_sim)
+clue2_main$usf_s_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$usf_s_c2w1_sim, clue2_main$usf_s_c2w2_sim)
+clue2_main$usf_s_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$usf_s_c1w1_sim, clue2_main$usf_s_c1w2_sim)
+clue2_main$usf_s_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$usf_s_c1w1_sim, clue2_main$usf_s_c1w2_sim)
+## usf_ppmi
+clue2_main$usf_ppmi_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$usf_ppmi_c2w1_sim, clue2_main$usf_ppmi_c2w2_sim)
+clue2_main$usf_ppmi_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$usf_ppmi_c2w1_sim, clue2_main$usf_ppmi_c2w2_sim)
+clue2_main$usf_ppmi_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$usf_ppmi_c1w1_sim, clue2_main$usf_ppmi_c1w2_sim)
+clue2_main$usf_ppmi_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$usf_ppmi_c1w1_sim, clue2_main$usf_ppmi_c1w2_sim)
+
+## usf_rw
+clue2_main$usf_rw_c2_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$usf_rw_c2w1_sim, clue2_main$usf_rw_c2w2_sim)
+clue2_main$usf_rw_c2_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$usf_rw_c2w1_sim, clue2_main$usf_rw_c2w2_sim)
+clue2_main$usf_rw_c1_sim_guessed = ifelse(clue2_main$w1_guessed == 1, 
+                                      clue2_main$usf_rw_c1w1_sim, clue2_main$usf_rw_c1w2_sim)
+clue2_main$usf_rw_c1_sim_unguessed = ifelse(clue2_main$w1_guessed == 0, 
+                                      clue2_main$usf_rw_c1w1_sim, clue2_main$usf_rw_c1w2_sim)
+
+
+## selecting only similarities
+clue2_sims = clue2_main %>% select(Subject, Word1, Word2, Clue1, Clue2,
+                             glove_c2_sim_guessed:usf_rw_c1_sim_unguessed) %>%
+  pivot_longer(cols = -c(Subject, Word1, Word2, Clue1, Clue2), names_to = 'comparison') %>%
+   separate(comparison, into = c("Representation", "Type", "Clue", "Sim", "guessed"))%>%
+  mutate(guessed = ifelse(is.na(guessed), Sim, guessed),
+         Clue = ifelse(Clue == "sim", Type, Clue),
+         Type = ifelse(!Type %in% c("s", "ppmi", "rw"), "", Type),
+         Representation = paste(Representation, Type, sep = "-"))
+
+Rmisc::summarySE(clue2_sims,
+                             measurevar = "value",
+                    groupvars = c( "Clue", "guessed"), na.rm = TRUE) %>%
+    mutate(Clue = fct_recode(Clue, `Clue 1` = "c1", `Clue 2` = "c2"),
+           guessed = fct_recode(guessed, `Guessed Word` = "guessed", 
+                                `Unguessed Word` = "unguessed")) %>%
+ggplot(aes(x = guessed, y = value,
+           group = Clue, fill = Clue)) + 
+   geom_bar(stat = "identity", position = "dodge", width = 0.7, color= "gray26")+
+ geom_errorbar(aes(ymin=value - se, ymax=value + se), 
+             size = 0.5, width=0.1, 
+                  color = "gray26", position = position_dodge(0.75))+
+ theme_few()+
+  scale_fill_solarized()+
+    labs(x = "", y = "cosine similarity") +
+    ggtitle("Clue 2")+
+    theme_few()+
+  theme(aspect.ratio = 1)+
+  ggtitle("Similarity of First and Second Clues to 
+  Guessed and Unguessed Words in the First Attempt")+
+   theme(axis.text = element_text(size = rel(1), face = "bold"),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+```
+
+
+## Accuracy Models
+
+### w1 correct
+
+```{r}
+library(lme4)
+
+c$swow_rw_avg_c1_w1w2 = (c$swow_rw_c1w1_sim + c$swow_rw_c1w2_sim)/2
+c$usf_s_avg_c1_w1w2 = (c$usf_s_c1w1_sim + c$usf_s_c1w2_sim)/2
+c$usf_ppmi_avg_c1_w1w2 = (c$usf_ppmi_c1w1_sim + c$usf_ppmi_c1w2_sim)/2
+c$usf_rw_avg_c1_w1w2 = (c$usf_rw_c1w1_sim + c$usf_rw_c1w2_sim)/2
+c$swow_s_avg_c1_w1w2 = (c$swow_s_c1w1_sim + c$swow_s_c1w2_sim)/2
+c$swow_ppmi_avg_c1_w1w2 = (c$swow_ppmi_c1w1_sim + c$swow_ppmi_c1w2_sim)/2
+c$glove_avg_c1_w1w2 = (c$glove2017_c1w1_sim + c$glove2017_c1w2_sim)/2
+c$word2vec_avg_c1_w1w2 = (c$word2vec2017_c1w1_sim + c$word2vec2017_c1w2_sim)/2
+
+# create partcorrect variables
+
+clue2_main = c %>%
+  filter(Clue2 != "na" & Clue2 != "") %>%
+  rowwise() %>% 
+  mutate(w1_guessed = as.numeric(str_detect(Word1, P2W1) | str_detect(Word1, P2W2)),
+         w2_guessed = as.numeric(str_detect(Word2, P2W1) | str_detect(Word2, P2W2)),
+         A1PartCorrect = ifelse( (w1_guessed == 1 & w2_guessed == 0), "w2 incorrect",
+                                 ifelse((w1_guessed == 0 & w2_guessed == 1),
+                                     "w1 incorrect", "both incorrect")))
+
+clue2_data_w1correct = clue2_main %>% filter(A1PartCorrect == "w2 incorrect")
+clue2_data_w2correct = clue2_main %>% filter(A1PartCorrect == "w1 incorrect")
+clue2_data_nocorrect = clue2_main %>% filter(A1PartCorrect == "both incorrect")
+
+
+clue2_acc_glove = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             glove2017_c2w1_sim +
+                             glove2017_c2w2_sim +
+                          glove_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_glove)
+car::Anova(clue2_acc_glove)
+MuMIn::r.squaredGLMM(clue2_acc_glove)
+
+clue2_acc_word2vec = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             word2vec2017_c2w1_sim +
+                             word2vec2017_c2w2_sim +
+                          word2vec_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_word2vec)
+car::Anova(clue2_acc_word2vec)
+MuMIn::r.squaredGLMM(clue2_acc_word2vec)
+
+## usf
+
+clue2_acc_usf_s = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             usf_s_c2w1_sim +
+                             usf_s_c2w2_sim +
+                          usf_s_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_usf_s)
+car::Anova(clue2_acc_usf_s)
+MuMIn::r.squaredGLMM(clue2_acc_usf_s)
+
+clue2_acc_usf_ppmi = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             usf_ppmi_c2w1_sim +
+                             usf_ppmi_c2w2_sim +
+                             usf_ppmi_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_usf_ppmi)
+car::Anova(clue2_acc_usf_ppmi)
+MuMIn::r.squaredGLMM(clue2_acc_usf_ppmi)
+
+
+clue2_acc_usf_rw = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             usf_rw_c2w1_sim +
+                             usf_rw_c2w2_sim +
+                           usf_rw_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_usf_rw)
+car::Anova(clue2_acc_usf_rw)
+MuMIn::r.squaredGLMM(clue2_acc_usf_rw)
+
+## swow
+
+clue2_acc_swow_s = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             swow_s_c2w1_sim +
+                             swow_s_c2w2_sim +
+                           swow_s_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_swow_s)
+car::Anova(clue2_acc_swow_s)
+MuMIn::r.squaredGLMM(clue2_acc_swow_s)
+
+clue2_acc_swow_ppmi = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             swow_ppmi_c2w1_sim +
+                             swow_ppmi_c2w2_sim +
+                             swow_ppmi_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_swow_ppmi)
+car::Anova(clue2_acc_swow_ppmi)
+MuMIn::r.squaredGLMM(clue2_acc_swow_ppmi)
+
+
+clue2_acc_swow_rw = glmer(data = clue2_data_w1correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             swow_rw_c2w1_sim +
+                             swow_rw_c2w2_sim +
+                            swow_rw_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_swow_rw)
+car::Anova(clue2_acc_swow_rw)
+MuMIn::r.squaredGLMM(clue2_acc_swow_rw)
+
+```
+
+### w2 correct
+
+```{r}
+clue2_acc_glove = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             glove2017_c2w1_sim +
+                             glove2017_c2w2_sim +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_glove)
+car::Anova(clue2_acc_glove)
+MuMIn::r.squaredGLMM(clue2_acc_glove)
+
+clue2_acc_word2vec = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             word2vec2017_c2w1_sim +
+                             word2vec2017_c2w2_sim +
+                          word2vec_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_word2vec)
+car::Anova(clue2_acc_word2vec)
+MuMIn::r.squaredGLMM(clue2_acc_word2vec)
+
+## usf
+
+clue2_acc_usf_s = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             usf_s_c2w1_sim +
+                             usf_s_c2w2_sim +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_usf_s)
+car::Anova(clue2_acc_usf_s)
+MuMIn::r.squaredGLMM(clue2_acc_usf_s)
+
+clue2_acc_usf_ppmi = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             usf_ppmi_c2w1_sim +
+                             usf_ppmi_c2w2_sim +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_usf_ppmi)
+car::Anova(clue2_acc_usf_ppmi)
+MuMIn::r.squaredGLMM(clue2_acc_usf_ppmi)
+
+
+clue2_acc_usf_rw = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             usf_rw_c2w1_sim +
+                             usf_rw_c2w2_sim +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_usf_rw)
+car::Anova(clue2_acc_usf_rw)
+MuMIn::r.squaredGLMM(clue2_acc_usf_rw)
+
+## swow
+
+clue2_acc_swow_s = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             swow_s_c2w1_sim +
+                             swow_s_c2w2_sim +
+                           swow_s_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_swow_s)
+car::Anova(clue2_acc_swow_s)
+MuMIn::r.squaredGLMM(clue2_acc_swow_s)
+
+clue2_acc_swow_ppmi = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             swow_ppmi_c2w1_sim +
+                             swow_ppmi_c2w2_sim +
+                             swow_ppmi_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_swow_ppmi)
+car::Anova(clue2_acc_swow_ppmi)
+MuMIn::r.squaredGLMM(clue2_acc_swow_ppmi)
+
+
+clue2_acc_swow_rw = glmer(data = clue2_data_w2correct, 
+                           Player2SecondAnswer.ACC ~ 
+                             swow_rw_c2w1_sim +
+                             swow_rw_c2w2_sim +
+                            swow_rw_avg_c1_w1w2 +
+                             (1|wordpair),
+                          family = "binomial",
+                          control=glmerControl(optimizer="bobyqa",
+          optCtrl=list(maxfun=100000)))
+summary(clue2_acc_swow_rw)
+car::Anova(clue2_acc_swow_rw)
+MuMIn::r.squaredGLMM(clue2_acc_swow_rw)
+
+```
+
+### Figure 7
+
+```{r}
+## what if we used the guessed/unguessed classification for this
+## selecting only similarities
+fig6_data = clue2_main %>% select(Subject, Word1, Word2, Clue1, Clue2, Player2SecondAnswer.ACC,
+                             glove_c2_sim_guessed:usf_rw_c1_sim_unguessed) %>%
+  pivot_longer(cols = -c(Subject, Word1, Word2, Clue1, Clue2, Player2SecondAnswer.ACC), 
+               names_to = 'comparison') %>%
+   separate(comparison, into = c("Representation", "Type", "Clue", "Sim", "guessed")) %>%
+  mutate(guessed = ifelse(is.na(guessed), Sim, guessed),
+         Clue = ifelse(Clue == "sim", Type, Clue),
+         Type = ifelse(!Type %in% c("s", "ppmi", "rw"), "", Type),
+         Representation = toupper(paste(Representation, Type, sep = "-")))
+
+fig6_data$Representation= ifelse(fig6_data$Representation == "WORD2VEC-", "word2vec",
+                                 ifelse(fig6_data$Representation == "GLOVE-", 
+                                        "GloVe", fig6_data$Representation))
+
+fig6_data$guessed= ifelse(fig6_data$guessed == "guessed", "Guessed Word", "Unguessed Word")
+
+fig6_data$Representation = ordered(as.factor(fig6_data$Representation),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-S", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-S", "USF-PPMI", "USF-RW"
+                                              ))
+
+
+scaleFUN <- function(x) sprintf("%.1f", x)
+
+fig6_data %>% 
+  filter(!is.na(value))%>%
+  mutate(value = round(value, 1))%>%
+  ggplot(aes(x = value, y = Player2SecondAnswer.ACC, 
+             group = Representation, color = Representation)) + 
+geom_smooth(method = "lm", se = FALSE)+
+  scale_color_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+  theme_few()+
+  facet_wrap(~guessed)+
+  scale_x_continuous(labels=scaleFUN)+
+  scale_y_continuous(breaks=seq(0, 1, 0.2), limits=c(0, 1)) +
+       xlab("Cosine Similarity between Second Clue and Target Word") + 
+    ylab("Second Attempt Accuracy") +
+  ggtitle("Second Attempt Accuracy as a Function of 
+          Similarity of Second Clue to Guessed and Unguessed Words")+
+   theme(axis.text.x = element_text(face = "bold", size = rel(1)),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+
+
+
+```
+
+### Old Fig.7
+#### w1correct
+
+```{r}
+w1_fig = clue2_data_w1correct %>% select(wordpair, Clue2, Player2SecondAnswer.ACC,
+                                         swow_rw_c2w1_sim,
+                                         swow_rw_c2w2_sim,
+                                         swow_ppmi_c2w1_sim,
+                                         swow_ppmi_c2w2_sim,
+                                         swow_s_c2w1_sim,
+                                         swow_s_c2w2_sim,
+                                         usf_rw_c2w1_sim,
+                                         usf_rw_c2w2_sim,
+                                         usf_ppmi_c2w1_sim,
+                                         usf_ppmi_c2w2_sim,
+                                         usf_s_c2w1_sim,
+                                         usf_s_c2w2_sim,
+                                         glove2017_c2w1_sim,
+                                         glove2017_c2w2_sim,
+                                         word2vec2017_c2w1_sim,
+                                         word2vec2017_c2w2_sim)
+
+w1_fig = gather(w1_fig, Model, Similarity, colnames(w1_fig)[4:19])
+
+w1_fig$Model = ifelse(w1_fig$Model == "glove2017_c2w1_sim", "glove_glove_c2w1_sim",
+                      ifelse(w1_fig$Model == "glove2017_c2w2_sim", "glove_glove_c2w2_sim",
+                             w1_fig$Model))
+w1_fig$Model = ifelse(w1_fig$Model == "word2vec2017_c2w1_sim", "word2vec_word2vec_c2w1_sim",
+                      ifelse(w1_fig$Model == "word2vec2017_c2w2_sim", "word2vec_word2vec_c2w2_sim",
+                             w1_fig$Model))
+
+w1_fig = w1_fig %>% separate(Model, into = c("Model", "Type", "Distance", "Sim"))
+w1_fig$Type = ifelse(w1_fig$Type == "glove", "", w1_fig$Type)
+w1_fig$Type = ifelse(w1_fig$Type == "word2vec", "", w1_fig$Type)
+w1_fig$Model = toupper(w1_fig$Model)
+w1_fig$Model = ifelse(w1_fig$Model == "GLOVE", "GloVe", w1_fig$Model)
+w1_fig$Model = ifelse(w1_fig$Model == "WORD2VEC", "word2vec", w1_fig$Model)
+w1_fig$Type = toupper(w1_fig$Type)
+w1_fig$Model = paste(w1_fig$Model, w1_fig$Type, sep = "-")
+w1_fig$Model = ifelse(w1_fig$Model == "GloVe-", "GloVe", w1_fig$Model)
+w1_fig$Model = ifelse(w1_fig$Model == "word2vec-", "word2vec", w1_fig$Model)
+
+w1_fig$Distance = ifelse(w1_fig$Distance == "c2w1", "Clue2-Word1", "Clue2-Word2")
+
+w1_fig$Model = ordered(as.factor(w1_fig$Model),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-S", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-S", "USF-PPMI", "USF-RW"
+                                              ))
+
+
+w1_plot = w1_fig %>% 
+  ggplot(aes(x = Similarity, y = Player2SecondAnswer.ACC, 
+             group = Model, color = Model)) + 
+geom_smooth(method = "lm", se = FALSE)+
+  scale_color_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+  theme_few()+
+  facet_wrap(~Distance)+
+  scale_y_continuous(breaks=seq(0, 1, 0.2), limits=c(0, 1)) +
+       xlab("Cosine Similarity") + ylab("Second Attempt Accuracy") +
+  ggtitle("Guessed Word1 Correctly in the First Attempt")+
+   theme(axis.text.x = element_text(face = "bold", size = rel(1.2)),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+
+
+```
+
+#### w2correct
+
+```{r}
+w2_fig = clue2_data_w2correct %>% select(wordpair, Clue2, Player2SecondAnswer.ACC,
+                                         swow_rw_c2w1_sim,
+                                         swow_rw_c2w2_sim,
+                                         swow_ppmi_c2w1_sim,
+                                         swow_ppmi_c2w2_sim,
+                                         swow_s_c2w1_sim,
+                                         swow_s_c2w2_sim,
+                                         usf_rw_c2w1_sim,
+                                         usf_rw_c2w2_sim,
+                                         usf_ppmi_c2w1_sim,
+                                         usf_ppmi_c2w2_sim,
+                                         usf_s_c2w1_sim,
+                                         usf_s_c2w2_sim,
+                                         glove2017_c2w1_sim,
+                                         glove2017_c2w2_sim,
+                                         word2vec2017_c2w1_sim,
+                                         word2vec2017_c2w2_sim)
+
+w2_fig = gather(w2_fig, Model, Similarity, colnames(w2_fig)[4:19])
+
+w2_fig$Model = ifelse(w2_fig$Model == "glove_c2w1_sim", "glove_glove_c2w1_sim",
+                      ifelse(w2_fig$Model == "glove_c2w2_sim", "glove_glove_c2w2_sim",
+                             w2_fig$Model))
+w2_fig$Model = ifelse(w2_fig$Model == "word2vec_c2w1_sim", "word2vec_word2vec_c2w1_sim",
+                      ifelse(w2_fig$Model == "word2vec_c2w2_sim", "word2vec_word2vec_c2w2_sim",
+                             w2_fig$Model))
+
+w2_fig = w2_fig %>% separate(Model, into = c("Model", "Type", "Distance", "Sim"))
+w2_fig$Type = ifelse(w2_fig$Type == "glove", "", w2_fig$Type)
+w2_fig$Type = ifelse(w2_fig$Type == "word2vec", "", w2_fig$Type)
+w2_fig$Model = toupper(w2_fig$Model)
+w2_fig$Model = ifelse(w2_fig$Model == "GLOVE", "GloVe", w2_fig$Model)
+w2_fig$Model = ifelse(w2_fig$Model == "WORD2VEC", "word2vec", w2_fig$Model)
+w2_fig$Type = toupper(w2_fig$Type)
+w2_fig$Model = paste(w2_fig$Model, w2_fig$Type, sep = "-")
+w2_fig$Model = ifelse(w2_fig$Model == "GloVe-", "GloVe", w2_fig$Model)
+w2_fig$Model = ifelse(w2_fig$Model == "word2vec-", "word2vec", w2_fig$Model)
+
+w2_fig$Distance = ifelse(w2_fig$Distance == "c2w1", "Clue2-Word1", "Clue2-Word2")
+
+w2_fig$Model = ordered(as.factor(w2_fig$Model),
+                                  levels = c( "word2vec","GloVe",
+                                              "SWOW-S", "SWOW-PPMI", "SWOW-RW",
+                                              "USF-S", "USF-PPMI", "USF-RW"
+                                              ))
+
+
+w2_plot = w2_fig %>% 
+  ggplot(aes(x = Similarity, y = Player2SecondAnswer.ACC, 
+             group = Model, color = Model)) + 
+geom_smooth(method = "lm", se = FALSE)+
+  scale_color_manual(values = c("darkgoldenrod", "darkgoldenrod1",
+                                "lightskyblue4", "lightskyblue", "lightskyblue1",
+                                "palevioletred4", "palevioletred3", "pink"))+
+  theme_few()+
+  facet_wrap(~Distance)+
+  scale_y_continuous(breaks=seq(0, 1, 0.2), limits=c(0, 1)) +
+       xlab("Cosine Similarity") + ylab("Second Attempt Accuracy") +
+  ggtitle("Guessed Word2 Correctly in the First Attempt")+
+   theme(axis.text.x = element_text(face = "bold", size = rel(1.2)),
+          axis.title = element_text(face = "bold", size = rel(1)),
+          legend.title = element_text(face = "bold", size = rel(1)),
+         plot.title = element_text(hjust = .5),
+         strip.text.x = element_text(face = "bold", size = rel(1.4)))
+
+
+library(grid)
+gridExtra::grid.arrange(w1_plot, w2_plot, ncol = 1, 
+                        top=textGrob("Guesser's Second Attempt Accuracy Predicted by
+                                     Similarity of Second Clue to Target Words",gp=gpar(fontsize=15)))
+
+
+
+
+```
+
+
+
+
+
+
