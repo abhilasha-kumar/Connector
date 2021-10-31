@@ -1,3 +1,3 @@
 # communication-models
 
-trying to merge to connector repo
+in-progress work on fitting language models to game data
