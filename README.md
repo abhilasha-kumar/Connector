@@ -10,9 +10,9 @@ This subdirectory contains the data and analysis scripts for the paper introduci
 
 This subdirectory contains the data and analysis scripts for the conference paper [Contextual Flexibility Guides Communication in a Cooperative Language Game](https://escholarship.org/uc/item/92m138t3)
 
-## connector-online
+## connector-games
 
-This subdirectory points to a different repository (maintained by Jasper Wilson) with code for programming an online version of the Connector game.
+This subdirectory points to code for programming different online versions of the Connector game.
 
 ## communication-models
 
