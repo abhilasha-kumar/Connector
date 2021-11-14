@@ -1,9 +1,0 @@
-{
-    "name": "codenamesonecluenoboard",
-    "version": "0.0.1",
-    "description": "A nodeGame based on CodeNames with no board",
-    "author": "Jasper Wilson <jaspermwilson@gmail.com>",
-    "editor": "Pragat Wagle <pragatwagledev@gmail.com>",
-    "license": "MIT/X11",
-    "homepage": "http://nodegame.org"
-}
