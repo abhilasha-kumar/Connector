@@ -1,0 +1,20 @@
+<!doctype html>
+<title>Game</title>
+<link rel="stylesheet" href="/lib/bootstrap/bootstrap.min.css" />
+<link rel="stylesheet" href="css/style.css" />
+<body>
+  <div id="container">
+    <h2>Game</h2>
+    <div id="dictator" style="display: none">
+      <h4>Make an offer from 0 to 100 to the other player</h4>
+      <input type="number" min="0" max="100" name="offer" id="offer" />
+      <input type="button" value="Submit" name="submitOffer" id="submitOffer" class="btn" />
+      <br/>
+    </div>
+    <div id="observer" style="display: none">
+      <h4 id="waitingFor">Waiting for the decision of the dictator<span id="dots"></span></h4>
+      <span id="decision"></span>
+      <br/>
+    </div>
+  </div>
+</body>
