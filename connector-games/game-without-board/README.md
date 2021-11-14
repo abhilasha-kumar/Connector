@@ -1,4 +1,4 @@
-# codenames
+# codenamesonecluenoboard
 Jasper Wilson <jaspermwilson@gmail.com>
 
 #edited by
