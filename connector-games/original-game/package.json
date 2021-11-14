@@ -1,0 +1,8 @@
+{
+    "name": "codenamesoneclue",
+    "version": "0.0.1",
+    "description": "A nodeGame based on CodeNames",
+    "author": "Jasper Wilson <jaspermwilson@gmail.com>",
+    "license": "MIT/X11",
+    "homepage": "http://nodegame.org"
+}
