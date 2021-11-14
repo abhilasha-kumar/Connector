@@ -1,7 +1,9 @@
-# codenames
+# codenamesoneclue
 Jasper Wilson <jaspermwilson@gmail.com>
 
 ## Description
+#edited by Pragat Wagle <pragatwagledev@gmail.com
+
 
 A project in collaboration with Kumar Abhilasha (abhilasha.kumar@wustl.edu) and the Diverse Intelligences Summer Institute (https://www.diverseintelligencessummer.com/).
 
