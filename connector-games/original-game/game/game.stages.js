@@ -20,7 +20,7 @@ module.exports = function(stager, settings) {
     //stager.repeatStage('gameplay',3);
     // stager.step('clueOptionsprac');
     stager.step('clueFinalprac');
-    stager.step('guessOptionsprac');
+    // stager.step('guessOptionsprac');
     stager.step('guessFinalprac');
     stager.step('feedbackprac');
     stager.stage('endprac');
@@ -31,7 +31,7 @@ module.exports = function(stager, settings) {
     //stager.repeatStage('gameplay',3);
     // stager.step('clueOptions');
     stager.step('clueFinal');
-    stager.step('guessOptions');
+    // stager.step('guessOptions');
     stager.step('guessFinal');
     stager.step('feedback');
     stager.stage('demographics');

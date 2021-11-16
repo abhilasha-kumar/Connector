@@ -544,169 +544,169 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     });
 
-    stager.extendStep('guessOptionsprac', {
-        role: function() { return this.role; },
-        partner: function() { return this.partner; },
-        roles: {
-            CLUEGIVER:{
-                init: function() {
-                    node.game.guessesReceived = null;
-                },
-                donebutton: false,
-                frame: 'studyboardCG.htm',
-                cb: function() {
+    // stager.extendStep('guessOptionsprac', {
+    //     role: function() { return this.role; },
+    //     partner: function() { return this.partner; },
+    //     roles: {
+    //         CLUEGIVER:{
+    //             init: function() {
+    //                 node.game.guessesReceived = null;
+    //             },
+    //             donebutton: false,
+    //             frame: 'studyboardCG.htm',
+    //             cb: function() {
 
-                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
-                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
-                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
-                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
-                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
-                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
-                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
-                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
-                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
-                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
-                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
-                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
-                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
-                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
-                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
-                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
-                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
-                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
-                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
-                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
-
-
-                    var that;//force proceed when guess is sent from other player
-                    if (this.guessesReceived !== null) node.done();
-                    that = this;
-                    node.on.data('GUESSES', function(msg) { node.done();
-                        that.guessesReceived = true;
-                        node.done();
-                    });
+    //                 W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+    //                 W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+    //                 W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+    //                 W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+    //                 W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+    //                 W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+    //                 W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+    //                 W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+    //                 W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+    //                 W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+    //                 W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+    //                 W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+    //                 W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+    //                 W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+    //                 W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+    //                 W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+    //                 W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+    //                 W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+    //                 W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+    //                 W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
 
-                }
-            },
-            GUESSER:{
-                frame: 'guessesboard.htm',
-                donebutton: false,
-                cb: function() {
-
-                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
-                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
-                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
-                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
-                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
-                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
-                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
-                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
-                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
-                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
-                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
-                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
-                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
-                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
-                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
-                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
-                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
-                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
-                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
-                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+    //                 var that;//force proceed when guess is sent from other player
+    //                 if (this.guessesReceived !== null) node.done();
+    //                 that = this;
+    //                 node.on.data('GUESSES', function(msg) { node.done();
+    //                     that.guessesReceived = true;
+    //                     node.done();
+    //                 });
 
 
-                    //W.setInnerHTML('clue', this.clueReceived);
-                    if(this.smallRoundCounter==0){//show clue given by other player
-                        W.setInnerHTML('cluepasttxt', "Your first clue is ");
-                        W.setInnerHTML('cluepast', this.clueReceived + ".");
-                    }
-                    if(this.smallRoundCounter==1){
-                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
-                        W.setInnerHTML('cluepast0txt', "Your second clue is ");
-                        W.setInnerHTML('cluepast0', this.clueReceived + ".");
-                    }
-                    if(this.smallRoundCounter==2){
-                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
-                        W.setInnerHTML('cluepast0txt', "Your second clue was ");
-                        W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
-                        W.setInnerHTML('cluepast1txt', "Your third clue is ");
-                        W.setInnerHTML('cluepast1', this.clueReceived + ".");
-                    }
+    //             }
+    //         },
+    //         GUESSER:{
+    //             frame: 'guessesboard.htm',
+    //             donebutton: false,
+    //             cb: function() {
 
-                    var el = W.getElementById("gbrd");
-                    this.clicker = function (e){//add event listener to record button presses of game board
-                        var target = e.target;
-                        var myDiv = W.getElementById("glist");
-                        if(target.className.match("button button1")){
-                        myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
-                        node.game.doneButton.enable();
-
-                            node.game.memory.add({
-                                player: node.player.id,
-                                stage: node.game.getCurrentGameStage(),
-                                GuessOptions: target.innerHTML,
-                                GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
-                                customTimeStamp: node.timer.getTimeSince('start')
-                            });
-                        }
+    //                 W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+    //                 W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+    //                 W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+    //                 W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+    //                 W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+    //                 W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+    //                 W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+    //                 W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+    //                 W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+    //                 W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+    //                 W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+    //                 W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+    //                 W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+    //                 W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+    //                 W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+    //                 W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+    //                 W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+    //                 W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+    //                 W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+    //                 W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
 
-                    },
-                    el.addEventListener('click', this.clicker);//add event listener
-                },
-                done: function() {//send signal for other player to end step, removes event listener so that these values cannot change
-                    var el = W.getElementById("gbrd");
-                    el.removeEventListener('click', this.clicker);
-                    node.say('GUESSES', node.game.partner);
-                    var memArray = node.game.memory.select('GuessOptions').and('customTimeStamp','!in', this.optionTimeArray).fetch();
-                    var i;
+    //                 //W.setInnerHTML('clue', this.clueReceived);
+    //                 if(this.smallRoundCounter==0){//show clue given by other player
+    //                     W.setInnerHTML('cluepasttxt', "Your first clue is ");
+    //                     W.setInnerHTML('cluepast', this.clueReceived + ".");
+    //                 }
+    //                 if(this.smallRoundCounter==1){
+    //                     W.setInnerHTML('cluepasttxt', "Your first clue was ");
+    //                     W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
+    //                     W.setInnerHTML('cluepast0txt', "Your second clue is ");
+    //                     W.setInnerHTML('cluepast0', this.clueReceived + ".");
+    //                 }
+    //                 if(this.smallRoundCounter==2){
+    //                     W.setInnerHTML('cluepasttxt', "Your first clue was ");
+    //                     W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
+    //                     W.setInnerHTML('cluepast0txt', "Your second clue was ");
+    //                     W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
+    //                     W.setInnerHTML('cluepast1txt', "Your third clue is ");
+    //                     W.setInnerHTML('cluepast1', this.clueReceived + ".");
+    //                 }
 
-                    for (i=0; i<memArray.length; i++) {//make into for loop with a bunch of if statements
+    //                 var el = W.getElementById("gbrd");
+    //                 this.clicker = function (e){//add event listener to record button presses of game board
+    //                     var target = e.target;
+    //                     var myDiv = W.getElementById("glist");
+    //                     if(target.className.match("button button1")){
+    //                     myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
+    //                     node.game.doneButton.enable();
 
-                        if(i == 0){
-                            node.set({GuessOption1 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION1_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
+    //                         node.game.memory.add({
+    //                             player: node.player.id,
+    //                             stage: node.game.getCurrentGameStage(),
+    //                             GuessOptions: target.innerHTML,
+    //                             GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
+    //                             customTimeStamp: node.timer.getTimeSince('start')
+    //                         });
+    //                     }
 
-                        if(i == 1){
-                            node.set({GuessOption2 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION2_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 2){
-                            node.set({GuessOption3 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION3_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 3){
-                            node.set({GuessOption4 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION4_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 4){
-                            node.set({GuessOption5 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION5_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 5){
-                            node.set({GuessOption6 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION6_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 6){
-                            node.set({GuessOption7 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION7_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 7){
-                            node.set({GuessOption8 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION8_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
 
-                        this.optionTimeArray.push(memArray[i].customTimeStamp);
+    //                 },
+    //                 el.addEventListener('click', this.clicker);//add event listener
+    //             },
+    //             done: function() {//send signal for other player to end step, removes event listener so that these values cannot change
+    //                 var el = W.getElementById("gbrd");
+    //                 el.removeEventListener('click', this.clicker);
+    //                 node.say('GUESSES', node.game.partner);
+    //                 var memArray = node.game.memory.select('GuessOptions').and('customTimeStamp','!in', this.optionTimeArray).fetch();
+    //                 var i;
 
-                    }
-                }
-            }
-        }
-    });
+    //                 for (i=0; i<memArray.length; i++) {//make into for loop with a bunch of if statements
+
+    //                     if(i == 0){
+    //                         node.set({GuessOption1 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION1_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+
+    //                     if(i == 1){
+    //                         node.set({GuessOption2 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION2_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 2){
+    //                         node.set({GuessOption3 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION3_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 3){
+    //                         node.set({GuessOption4 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION4_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 4){
+    //                         node.set({GuessOption5 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION5_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 5){
+    //                         node.set({GuessOption6 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION6_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 6){
+    //                         node.set({GuessOption7 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION7_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 7){
+    //                         node.set({GuessOption8 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION8_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+
+    //                     this.optionTimeArray.push(memArray[i].customTimeStamp);
+
+    //                 }
+    //             }
+    //         }
+    //     }
+    // });
 
     stager.extendStep('guessFinalprac', {
         role: function() { return this.role; },
@@ -780,7 +780,24 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
                     W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
                     W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
-
+                    if(this.smallRoundCounter==0){//show clue given by other player
+                        W.setInnerHTML('cluepasttxt', "Your first clue is ");
+                        W.setInnerHTML('cluepast', this.clueReceived + ".");
+                    }
+                    if(this.smallRoundCounter==1){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue is ");
+                        W.setInnerHTML('cluepast0', this.clueReceived + ".");
+                    }
+                    if(this.smallRoundCounter==2){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue was ");
+                        W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
+                        W.setInnerHTML('cluepast1txt', "Your third clue is ");
+                        W.setInnerHTML('cluepast1', this.clueReceived + ".");
+                    }
                     this.answerCounter = 0;
 
                     var el = W.getElementById("gbrd");
@@ -1253,165 +1270,165 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
         }
     });
 
-    stager.extendStep('guessOptions', {
-        role: function() { return this.role; },
-        partner: function() { return this.partner; },
-        roles: {
-            CLUEGIVER:{
-                init: function() {
-                    node.game.guessesReceived = null;
-                },
-                donebutton: false,
-                frame: 'studyboardCG.htm',
-                cb: function() {
+    // stager.extendStep('guessOptions', {
+    //     role: function() { return this.role; },
+    //     partner: function() { return this.partner; },
+    //     roles: {
+    //         CLUEGIVER:{
+    //             init: function() {
+    //                 node.game.guessesReceived = null;
+    //             },
+    //             donebutton: false,
+    //             frame: 'studyboardCG.htm',
+    //             cb: function() {
 
-                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
-                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
-                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
-                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
-                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
-                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
-                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
-                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
-                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
-                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
-                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
-                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
-                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
-                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
-                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
-                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
-                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
-                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
-                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
-                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
-
-
-                    var that;//force proceed when guess is sent from other player
-                    if (this.guessesReceived !== null) node.done();
-                    that = this;
-                    node.on.data('GUESSES', function(msg) { node.done();
-                        that.guessesReceived = true;
-                        node.done();
-                    });
+    //                 W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+    //                 W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+    //                 W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+    //                 W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+    //                 W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+    //                 W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+    //                 W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+    //                 W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+    //                 W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+    //                 W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+    //                 W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+    //                 W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+    //                 W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+    //                 W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+    //                 W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+    //                 W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+    //                 W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+    //                 W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+    //                 W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+    //                 W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
 
-                }
-            },
-            GUESSER:{
-                frame: 'guessesboard.htm',
-                doneButton: false,
-                cb: function() {
-
-                    W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
-                    W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
-                    W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
-                    W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
-                    W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
-                    W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
-                    W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
-                    W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
-                    W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
-                    W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
-                    W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
-                    W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
-                    W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
-                    W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
-                    W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
-                    W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
-                    W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
-                    W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
-                    W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
-                    W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
+    //                 var that;//force proceed when guess is sent from other player
+    //                 if (this.guessesReceived !== null) node.done();
+    //                 that = this;
+    //                 node.on.data('GUESSES', function(msg) { node.done();
+    //                     that.guessesReceived = true;
+    //                     node.done();
+    //                 });
 
 
-                    if(this.smallRoundCounter==0){//show clue given by other player
-                        W.setInnerHTML('cluepasttxt', "Your first clue is ");
-                        W.setInnerHTML('cluepast', this.clueReceived + ".");
-                    }
-                    if(this.smallRoundCounter==1){
-                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
-                        W.setInnerHTML('cluepast0txt', "Your second clue is ");
-                        W.setInnerHTML('cluepast0', this.clueReceived + ".");
-                    }
-                    if(this.smallRoundCounter==2){
-                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
-                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
-                        W.setInnerHTML('cluepast0txt', "Your second clue was ");
-                        W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
-                        W.setInnerHTML('cluepast1txt', "Your third clue is ");
-                        W.setInnerHTML('cluepast1', this.clueReceived + ".");
-                    }
+    //             }
+    //         },
+    //         GUESSER:{
+    //             frame: 'guessesboard.htm',
+    //             doneButton: false,
+    //             cb: function() {
 
-                    var el = W.getElementById("gbrd");
-                    this.clicker = function (e){//add event listener to record button presses of game board
-                        var target = e.target;
-                        var myDiv = W.getElementById("glist");
-                        if(target.className.match("button button1")){
-                        myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
-                        node.game.doneButton.enable();
-                        node.game.memory.add({
-                            player: node.player.id,
-                            stage: node.game.getCurrentGameStage(),
-                            GuessOptions: target.innerHTML,
-                            GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
-                            customTimeStamp: node.timer.getTimeSince('start')
-                        });
-                    }
-                    },
-                    el.addEventListener('click', this.clicker);//add event listener
-                },
-                done: function() {//send signal for other player to end step, removes event listener so that these values cannot change
-                    var el = W.getElementById("gbrd");
-                    el.removeEventListener('click', this.clicker);
-                    node.say('GUESSES', node.game.partner);
-                    var memArray = node.game.memory.select('GuessOptions').and('customTimeStamp','!in', this.optionTimeArray).fetch();
-                    var i;
+    //                 W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
+    //                 W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
+    //                 W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
+    //                 W.setInnerHTML('b3', this.boardboard[this.roundCounter][3]);
+    //                 W.setInnerHTML('b4', this.boardboard[this.roundCounter][4]);
+    //                 W.setInnerHTML('b5', this.boardboard[this.roundCounter][5]);
+    //                 W.setInnerHTML('b6', this.boardboard[this.roundCounter][6]);
+    //                 W.setInnerHTML('b7', this.boardboard[this.roundCounter][7]);
+    //                 W.setInnerHTML('b8', this.boardboard[this.roundCounter][8]);
+    //                 W.setInnerHTML('b9', this.boardboard[this.roundCounter][9]);
+    //                 W.setInnerHTML('b10', this.boardboard[this.roundCounter][10]);
+    //                 W.setInnerHTML('b11', this.boardboard[this.roundCounter][11]);
+    //                 W.setInnerHTML('b12', this.boardboard[this.roundCounter][12]);
+    //                 W.setInnerHTML('b13', this.boardboard[this.roundCounter][13]);
+    //                 W.setInnerHTML('b14', this.boardboard[this.roundCounter][14]);
+    //                 W.setInnerHTML('b15', this.boardboard[this.roundCounter][15]);
+    //                 W.setInnerHTML('b16', this.boardboard[this.roundCounter][16]);
+    //                 W.setInnerHTML('b17', this.boardboard[this.roundCounter][17]);
+    //                 W.setInnerHTML('b18', this.boardboard[this.roundCounter][18]);
+    //                 W.setInnerHTML('b19', this.boardboard[this.roundCounter][19]);
 
-                    for (i=0; i<memArray.length; i++) {//make into for loop with a bunch of if statements
 
-                        if(i == 0){
-                            node.set({GuessOption1 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION1_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
+    //                 if(this.smallRoundCounter==0){//show clue given by other player
+    //                     W.setInnerHTML('cluepasttxt', "Your first clue is ");
+    //                     W.setInnerHTML('cluepast', this.clueReceived + ".");
+    //                 }
+    //                 if(this.smallRoundCounter==1){
+    //                     W.setInnerHTML('cluepasttxt', "Your first clue was ");
+    //                     W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
+    //                     W.setInnerHTML('cluepast0txt', "Your second clue is ");
+    //                     W.setInnerHTML('cluepast0', this.clueReceived + ".");
+    //                 }
+    //                 if(this.smallRoundCounter==2){
+    //                     W.setInnerHTML('cluepasttxt', "Your first clue was ");
+    //                     W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
+    //                     W.setInnerHTML('cluepast0txt', "Your second clue was ");
+    //                     W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
+    //                     W.setInnerHTML('cluepast1txt', "Your third clue is ");
+    //                     W.setInnerHTML('cluepast1', this.clueReceived + ".");
+    //                 }
 
-                        if(i == 1){
-                            node.set({GuessOption2 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION2_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 2){
-                            node.set({GuessOption3 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION3_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 3){
-                            node.set({GuessOption4 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION4_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 4){
-                            node.set({GuessOption5 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION5_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 5){
-                            node.set({GuessOption6 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION6_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 6){
-                            node.set({GuessOption7 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION7_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
-                        if(i == 7){
-                            node.set({GuessOption8 : memArray[i].GuessOptions});
-                            node.set({GUESS_OPTION8_TIME: memArray[i].GUESS_OPTIONS_TIME});
-                        }
+    //                 var el = W.getElementById("gbrd");
+    //                 this.clicker = function (e){//add event listener to record button presses of game board
+    //                     var target = e.target;
+    //                     var myDiv = W.getElementById("glist");
+    //                     if(target.className.match("button button1")){
+    //                     myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML+", ";
+    //                     node.game.doneButton.enable();
+    //                     node.game.memory.add({
+    //                         player: node.player.id,
+    //                         stage: node.game.getCurrentGameStage(),
+    //                         GuessOptions: target.innerHTML,
+    //                         GUESS_OPTIONS_TIME: node.timer.getTimeSince('step'),
+    //                         customTimeStamp: node.timer.getTimeSince('start')
+    //                     });
+    //                 }
+    //                 },
+    //                 el.addEventListener('click', this.clicker);//add event listener
+    //             },
+    //             done: function() {//send signal for other player to end step, removes event listener so that these values cannot change
+    //                 var el = W.getElementById("gbrd");
+    //                 el.removeEventListener('click', this.clicker);
+    //                 node.say('GUESSES', node.game.partner);
+    //                 var memArray = node.game.memory.select('GuessOptions').and('customTimeStamp','!in', this.optionTimeArray).fetch();
+    //                 var i;
 
-                        this.optionTimeArray.push(memArray[i].customTimeStamp);
+    //                 for (i=0; i<memArray.length; i++) {//make into for loop with a bunch of if statements
 
-                    }
-                }
-            }
-        }
-    });
+    //                     if(i == 0){
+    //                         node.set({GuessOption1 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION1_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+
+    //                     if(i == 1){
+    //                         node.set({GuessOption2 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION2_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 2){
+    //                         node.set({GuessOption3 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION3_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 3){
+    //                         node.set({GuessOption4 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION4_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 4){
+    //                         node.set({GuessOption5 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION5_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 5){
+    //                         node.set({GuessOption6 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION6_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 6){
+    //                         node.set({GuessOption7 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION7_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+    //                     if(i == 7){
+    //                         node.set({GuessOption8 : memArray[i].GuessOptions});
+    //                         node.set({GUESS_OPTION8_TIME: memArray[i].GUESS_OPTIONS_TIME});
+    //                     }
+
+    //                     this.optionTimeArray.push(memArray[i].customTimeStamp);
+
+    //                 }
+    //             }
+    //         }
+    //     }
+    // });
 
     stager.extendStep('guessFinal', {
         role: function() { return this.role; },
@@ -1490,6 +1507,26 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
                     var el = W.getElementById("gbrd");
 
+
+
+                    if(this.smallRoundCounter==0){//show clue given by other player
+                        W.setInnerHTML('cluepasttxt', "Your first clue is ");
+                        W.setInnerHTML('cluepast', this.clueReceived + ".");
+                    }
+                    if(this.smallRoundCounter==1){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-2] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue is ");
+                        W.setInnerHTML('cluepast0', this.clueReceived + ".");
+                    }
+                    if(this.smallRoundCounter==2){
+                        W.setInnerHTML('cluepasttxt', "Your first clue was ");
+                        W.setInnerHTML('cluepast', this.cluespast[this.cluespast.length-3] + ".");
+                        W.setInnerHTML('cluepast0txt', "Your second clue was ");
+                        W.setInnerHTML('cluepast0', this.cluespast[this.cluespast.length-2] + ".");
+                        W.setInnerHTML('cluepast1txt', "Your third clue is ");
+                        W.setInnerHTML('cluepast1', this.clueReceived + ".");
+                    }
 
                     this.clicker2 = function (e){//event listener that receives two words and then ends the step
                         var target = e.target;
