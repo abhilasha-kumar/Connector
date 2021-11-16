@@ -942,7 +942,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         if (myDiv.innerHTML == " Your final answers:  ") {
                           //the condition if no word has been added, stores the first word and sends it to the partner
                           let finalGuess1 =  this.finalGuesses.getValues().items["finalGuess1"].value.toUpperCase();  
-                            let finalGuess2 =  this.finalGuesses.getValues().items["finalGuess2"].value.toUpperCase();  
                             myDiv.innerHTML = myDiv.innerHTML + finalGuess1;
                             node.say("GUESS1",node.game.partner,finalGuess1);
                           node.set({ GUESS_1_FINAL: finalGuess1});
@@ -956,14 +955,15 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                           node.game.memory.tag("guess1");
                         }
                         else if(!myDiv.innerHTML.includes(",")) {//the condition if 1 word has been added, stores the second word, send it to the partner, and ends the step for both players
-                            myDiv.innerHTML = myDiv.innerHTML + ", " + this.finalGuesses.getValues().items["finalGuess1"].value;
-                            node.say('GUESS2', node.game.partner, this.finalGuesses.getValues().items["finalGuess1"].valueL);
-                            node.set({GUESS_2_FINAL : this.finalGuesses.getValues().items["finalGuess1"].value});
+                            let finalGuess2 =  this.finalGuesses.getValues().items["finalGuess2"].value.toUpperCase();  
+                            myDiv.innerHTML = myDiv.innerHTML + ", " + finalGuess2;
+                            node.say('GUESS2', node.game.partner, finalGuess2);
+                            node.set({GUESS_2_FINAL : finalGuess2});
                             node.set({GUESS_2_FINAL_TIME : node.timer.getTimeSince('step')})
                             node.game.memory.add({
                                 player: node.player.id,
                                 stage: node.game.getCurrentGameStage(),
-                                Guess2: this.finalGuesses.getValues().items["finalGuess1"].value
+                                Guess2: finalGuess2
                             });
                             node.game.memory.tag("guess2");
                             el.removeEventListener('click', this.clicker2);
@@ -993,13 +993,13 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                     // node.set({guessOption2 : this.finalGuesses.getValues().items['finalGuess2'].value}),
                     // node.set({TBGuessOption2 : this.finalGuesses.getValues().items['finalGuess2'].timeBegin});
                     // node.set({TEGuessOption2 : this.finalGuesses.getValues().items['finalGuess2'].timeEnd});
-                    node.say('GUESS2', node.game.partner, finalGuess1);
-                    node.set({GUESS_2_FINAL : finalGuess1});
+                    node.say('GUESS2', node.game.partner, finalGuess2);
+                    node.set({GUESS_2_FINAL : finalGuess2});
                     node.set({GUESS_2_FINAL_TIME : node.timer.getTimeSince('step')})
                     node.game.memory.add({
                         player: node.player.id,
                         stage: node.game.getCurrentGameStage(),
-                        Guess2: finalGuess1
+                        Guess2: finalGuess2
                     });
                     node.game.memory.tag("guess2");
                     node.say('GUESS', node.game.partner);
@@ -1850,14 +1850,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                           node.game.memory.tag("guess1");
                         }
                         else if(!myDiv.innerHTML.includes(",")) {//the condition if 1 word has been added, stores the second word, send it to the partner, and ends the step for both players
-                            myDiv.innerHTML = myDiv.innerHTML + ", " + this.finalGuesses.getValues().items["finalGuess1"].value;
-                            node.say('GUESS2', node.game.partner, this.finalGuesses.getValues().items["finalGuess1"].valueL);
-                            node.set({GUESS_2_FINAL : this.finalGuesses.getValues().items["finalGuess1"].value});
+                            myDiv.innerHTML = myDiv.innerHTML + ", " + this.finalGuesses.getValues().items["finalGuess2"].value;
+                            node.say('GUESS2', node.game.partner, this.finalGuesses.getValues().items["finalGuess2"].valueL);
+                            node.set({GUESS_2_FINAL : this.finalGuesses.getValues().items["finalGuess2"].value});
                             node.set({GUESS_2_FINAL_TIME : node.timer.getTimeSince('step')})
                             node.game.memory.add({
                                 player: node.player.id,
                                 stage: node.game.getCurrentGameStage(),
-                                Guess2: this.finalGuesses.getValues().items["finalGuess1"].value
+                                Guess2: this.finalGuesses.getValues().items["finalGuess2"].value
                             });
                             node.game.memory.tag("guess2");
                             el.removeEventListener('click', this.clicker2);
