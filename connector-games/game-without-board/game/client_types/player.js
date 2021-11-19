@@ -446,7 +446,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             CLUEGIVER:{
                 frame: 'clueboard.htm',
                 cb: function() {
-                    W.setInnerHTML('containerbottom2', "Please type your FINAL clue below and click Done:"),
+                    W.setInnerHTML('containerbottom2', "Please type your clue below and click Done:"),
 
                     // W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
                     // W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
@@ -767,7 +767,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 frame: 'guessesboard.htm',
                 donebutton: true,
                 cb: function() {
-                  W.setInnerHTML("clue2", "Please select your FINAL guesses.");
+                  W.setInnerHTML("clue2", "Please type in your two guesses.");
                 //  W.setInnerHTML("b0", this.boardboard[this.roundCounter][0]),
                 //     W.setInnerHTML("b1", this.boardboard[this.roundCounter][1]);
                 //   W.setInnerHTML("b2", this.boardboard[this.roundCounter][2]);
@@ -939,7 +939,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         // that.validation(res, values);
                         var myDiv = W.getElementById("alist");
                         // if(target.className.match("button button1")){
-                        if (myDiv.innerHTML == " Your final answers:  ") {
+                        if (myDiv.innerHTML == " Your answers:  ") {
                           //the condition if no word has been added, stores the first word and sends it to the partner
                           let finalGuess1 =  this.finalGuesses.getValues().items["finalGuess1"].value.toUpperCase();  
                             myDiv.innerHTML = myDiv.innerHTML + finalGuess1;
@@ -1342,7 +1342,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             CLUEGIVER:{
                 frame: 'clueboard.htm',
                 cb: function() {
-                    W.setInnerHTML('containerbottom2', "Please type your FINAL clue below and click Done:"),
+                    W.setInnerHTML('containerbottom2', "Please type your clue below and click Done:"),
 
                     // W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
                     // W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
@@ -1659,7 +1659,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 frame: 'guessesboard.htm',
                 donebutton: true,
                 cb: function() {
-                    W.setInnerHTML('clue2', "Please select your FINAL guesses." );
+                    W.setInnerHTML('clue2', "Please type in your two guesses." );
                     // W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
                     // W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
                     // W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
@@ -1832,7 +1832,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         // that.validation(res, values);
                         var myDiv = W.getElementById("alist");
                         // if(target.className.match("button button1")){
-                        if (myDiv.innerHTML == " Your final answers:  ") {
+                        if (myDiv.innerHTML == " Your answers:  ") {
                           //the condition if no word has been added, stores the first word and sends it to the partner
                           myDiv.innerHTML =
                             myDiv.innerHTML +
@@ -1850,14 +1850,14 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                           node.game.memory.tag("guess1");
                         }
                         else if(!myDiv.innerHTML.includes(",")) {//the condition if 1 word has been added, stores the second word, send it to the partner, and ends the step for both players
-                            myDiv.innerHTML = myDiv.innerHTML + ", " + this.finalGuesses.getValues().items["finalGuess2"].value;
-                            node.say('GUESS2', node.game.partner, this.finalGuesses.getValues().items["finalGuess2"].valueL);
-                            node.set({GUESS_2_FINAL : this.finalGuesses.getValues().items["finalGuess2"].value});
+                            myDiv.innerHTML = myDiv.innerHTML + ", " + this.finalGuesses.getValues().items["finalGuess1"].value;
+                            node.say('GUESS2', node.game.partner, this.finalGuesses.getValues().items["finalGuess1"].valueL);
+                            node.set({GUESS_2_FINAL : this.finalGuesses.getValues().items["finalGuess1"].value});
                             node.set({GUESS_2_FINAL_TIME : node.timer.getTimeSince('step')})
                             node.game.memory.add({
                                 player: node.player.id,
                                 stage: node.game.getCurrentGameStage(),
-                                Guess2: this.finalGuesses.getValues().items["finalGuess2"].value
+                                Guess2: this.finalGuesses.getValues().items["finalGuess1"].value
                             });
                             node.game.memory.tag("guess2");
                             el.removeEventListener('click', this.clicker2);

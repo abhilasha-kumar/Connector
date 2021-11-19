@@ -439,7 +439,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             CLUEGIVER:{
                 frame: 'clueboard.htm',
                 cb: function() {
-                    W.setInnerHTML('containerbottom2', "Please type your FINAL clue below and click Done:"),
+                    W.setInnerHTML('containerbottom2', "Please type your clue below and click Done:"),
 
                     W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
                     W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
@@ -759,7 +759,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 frame: 'guessesboard.htm',
                 donebutton: false,
                 cb: function() {
-                    W.setInnerHTML('clue2', "Please select your FINAL guesses." ),
+                    W.setInnerHTML('clue2', "Please select your guesses." ),
                     W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
                     W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
                     W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
@@ -807,7 +807,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         var target = e.target;
                         var myDiv = W.getElementById("alist");
                         if(target.className.match("button button1")){
-                        if(myDiv.innerHTML == " Your final answers:  "){//the condition if no word has been added, stores the first word and sends it to the partner
+                        if(myDiv.innerHTML == " Your answers:  "){//the condition if no word has been added, stores the first word and sends it to the partner
                             myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML;
                             node.say('GUESS1', node.game.partner, target.innerHTML);
                             node.set({GUESS_1_FINAL : target.innerHTML});
@@ -1165,7 +1165,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
             CLUEGIVER:{
                 frame: 'clueboard.htm',
                 cb: function() {
-                    W.setInnerHTML('containerbottom2', "Please type your FINAL clue below and click Done:"),
+                    W.setInnerHTML('containerbottom2', "Please type your clue below and click Done:"),
 
                     W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
                     W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
@@ -1481,7 +1481,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                 frame: 'guessesboard.htm',
                 donebutton: false,
                 cb: function() {
-                    W.setInnerHTML('clue2', "Please select your FINAL guesses." ),
+                    W.setInnerHTML('clue2', "Please select your guesses." ),
                     W.setInnerHTML('b0', this.boardboard[this.roundCounter][0]),
                     W.setInnerHTML('b1', this.boardboard[this.roundCounter][1]);
                     W.setInnerHTML('b2', this.boardboard[this.roundCounter][2]);
@@ -1533,7 +1533,7 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         var myDiv = W.getElementById("alist");
                         if(target.className.match("button button1")){
 
-                        if(myDiv.innerHTML == " Your final answers:  "){//the condition if no word has been added, stores the first word and sends it to the partner
+                        if(myDiv.innerHTML == " Your answers:  "){//the condition if no word has been added, stores the first word and sends it to the partner
                             myDiv.innerHTML = myDiv.innerHTML+ target.innerHTML;
                             node.say('GUESS1', node.game.partner, target.innerHTML);
                             node.set({GUESS_1_FINAL : target.innerHTML});
