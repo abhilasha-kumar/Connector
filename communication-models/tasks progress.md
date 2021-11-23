@@ -3,8 +3,9 @@
 ## Nov 23 2021
 
 1. Create a function to compute cosine similarity between any two word vectors: cosine(word1, word2)
-2. Create a function to compute the average vector of any two vectors: average(word1, word2)
-3. Create a function to find the word in the vocab closest to an average vector for each wordpair closest_word(word1,word2):
+2. Create a function to find the word closest to another word in the vocab using cosines: closest(word, vocab)
+3. Create a function to compute the average vector of any two vectors: average(word1, word2)
+4. Create a function to find the word in the vocab closest to an average vector for each wordpair closest_word(word1,word2):
 
 word1: lion
 word2: tiger
