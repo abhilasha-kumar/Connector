@@ -489,6 +489,8 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    });
                 },
                 done: function() {//send clue to other player and clue and time info to database
+                    node.set({clueGiverID: this.id});
+                    node.set({clueGiverRandCode: this.randomCode});
                     this.cluespast.push(this.clueGive2.getValues().value);
 
                     node.say('CLUE', node.game.partner, this.clueGive2.getValues().value);
@@ -540,6 +542,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         node.done();
                     });
                 },
+                done: function() {
+                    node.set({guesserID: this.id});
+                    node.set({guesserRandCode: this.randomCode});
+                    return;
+                }
             }
         }
     });
@@ -1215,6 +1222,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    });
                 },
                 done: function() {//send clue to other player and clue and time info to database
+                    node.set({clueGiverID: this.id});
+                    node.set({clueGiverRandCode: this.randomCode});
+
                     this.cluespast.push(this.clueGive2.getValues().value);
 
                     node.say('CLUE', node.game.partner, this.clueGive2.getValues().value);
@@ -1266,6 +1276,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         node.done();
                     });
                 },
+                done: function() {
+                    node.set({guesserID: this.id});
+                    node.set({guesserRandCode: this.randomCode});
+                    return;
+                }
             }
         }
     });

@@ -140,7 +140,6 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
 
         this.roundCounter = 0;//iterated value to move through the word pairs
         this.smallRoundCounter = 0;//iterated value to record the 3 trials for each word pair
-        // this.pairnumber = 33;//the number of pairs in the total experiment, should be 57
         this.pairnumber = 33;//the number of pairs in the total experiment, should be 57
         this.pracpairnumber=3;
         this.optionTimeArray = [0];
@@ -496,6 +495,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    });
                 },
                 done: function() {//send clue to other player and clue and time info to database
+                    node.set({clueGiverID: this.id});
+                    node.set({clueGiverRandCode: this.randomCode});
+
                     this.cluespast.push(this.clueGive2.getValues().value);
 
                     node.say('CLUE', node.game.partner, this.clueGive2.getValues().value);
@@ -547,6 +549,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         node.done();
                     });
                 },
+                done: function() {
+                    node.set({guesserID: this.id});
+                    node.set({guesserRandCode: this.randomCode});
+                    return;
+                }
             }
         }
     });
@@ -1392,6 +1399,9 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                    });
                 },
                 done: function() {//send clue to other player and clue and time info to database
+                    node.set({clueGiverID: this.id}),
+                    node.set({clueGiverRandCode: this.randomCode}),
+
                     this.cluespast.push(this.clueGive2.getValues().value);
 
                     node.say('CLUE', node.game.partner, this.clueGive2.getValues().value);
@@ -1443,6 +1453,11 @@ module.exports = function(treatmentName, settings, stager, setup, gameRoom) {
                         node.done();
                     });
                 },
+                done: function() {
+                    node.set({guesserID: this.id});
+                    node.set({guesserRandCode: this.randomCode});
+                    return;
+                }
             }
         }
     });
