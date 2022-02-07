@@ -121,8 +121,8 @@ class search:
     '''
 
     # starts n_walks independent random walks for n_steps, and computes union and intersection 
-    rw_w1 = np.sum(np.array([search.random_walk(w1, n_steps, vocab, Graph)[1] for i in range(n_walks)]), axis = 0)
-    rw_w2 = np.sum(np.array([search.random_walk(w2, n_steps, vocab, Graph)[1] for i in range(n_walks)]), axis = 0)
+    rw_w1 = np.sum(np.array([search.random_walk(w1, n_steps, vocabulary, Graph)[1] for i in range(n_walks)]), axis = 0)
+    rw_w2 = np.sum(np.array([search.random_walk(w2, n_steps, vocabulary, Graph)[1] for i in range(n_walks)]), axis = 0)
 
 
     v = vocabulary.copy()
