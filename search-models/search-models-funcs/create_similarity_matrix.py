@@ -6,6 +6,7 @@ def create_similarity_matrix(matrix):
   a NxN similarity matrix
   
   '''
+  import scipy.spatial.distance
   N = matrix.shape[0]
   matrix = 1-scipy.spatial.distance.cdist(matrix, matrix, 'cosine').reshape(-1)
   matrix = matrix.reshape((N,N))
