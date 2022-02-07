@@ -105,14 +105,13 @@ class search:
     G = nx.from_numpy_matrix(np.matrix(x), create_using=nx.DiGraph)
     return G
   
-  def union_intersection(w1,w2, n_steps, n_walks, vocabulary):
+  def union_intersection(w1, w2, n_steps, n_walks, vocabulary):
     '''
     computes the union & intersection of n_walks random walks of n_steps from w1 and w2
 
     inputs:
-    (1) w1 & w2: two words for which the walks will be generated
-    (2) n_steps: number of steps each random walk will take
-    (3) n_walks: number of walks for each word
+    (1) rw_w1 & rw_w2: outputs of two random walks starting from w1 and w2
+    
     (4) vocabulary: the vocab from which w1 & w2 are selected
 
     outputs:
@@ -120,9 +119,11 @@ class search:
     (2) intersection_df: contains the words visited by BOTH words in descending order of times visited
 
     '''
+
     # starts n_walks independent random walks for n_steps, and computes union and intersection 
-    rw_w1 = np.sum(np.array([RSA.random_walk(w1, n_steps, vocab, Graph)[1] for i in range(n_walks)]), axis = 0)
-    rw_w2 = np.sum(np.array([RSA.random_walk(w2, n_steps, vocab, Graph)[1] for i in range(n_walks)]), axis = 0)
+    rw_w1 = np.sum(np.array([search.random_walk(w1, n_steps, vocab, Graph)[1] for i in range(n_walks)]), axis = 0)
+    rw_w2 = np.sum(np.array([search.random_walk(w2, n_steps, vocab, Graph)[1] for i in range(n_walks)]), axis = 0)
+
 
     v = vocabulary.copy()
 
