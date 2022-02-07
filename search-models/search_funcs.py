@@ -301,7 +301,7 @@ class RSA:
             for board_name in boards.keys()}
       for (key, embedding) in representations.items()
     }
-    representation = representations['glove']
+    representation = list(representations.keys())
     boardmatrix = board_matrices[representation][board_name]
     ## here we restrict the softmax to only certain candidates
     candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
