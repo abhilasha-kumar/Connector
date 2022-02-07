@@ -301,6 +301,7 @@ class RSA:
             for board_name in boards.keys()}
       for (key, embedding) in representations.items()
     }
+    representation = representations['glove']
     boardmatrix = board_matrices[representation][board_name]
     ## here we restrict the softmax to only certain candidates
     candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
@@ -313,7 +314,7 @@ class RSA:
     (1) board name ("e1_board1_words")
     (2) beta: optimized parameter 
     (3) costweight: optimized weight to freequency 
-    (4) representation ('glove')
+    (2) representations (representations["glove"]), and 
     (5) candidates (a list of words/clues to iterate over)
     (6) vocab
 
