@@ -105,7 +105,7 @@ class search:
     G = nx.from_numpy_matrix(np.matrix(x), create_using=nx.DiGraph)
     return G
   
-  def union_intersection(w1, w2, n_steps, n_walks, vocabulary):
+  def union_intersection(w1, w2, n_steps, n_walks, vocabulary, Graph):
     '''
     computes the union & intersection of n_walks random walks of n_steps from w1 and w2
 
