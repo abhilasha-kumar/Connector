@@ -282,11 +282,11 @@ class RSA:
     # note that cosine is in range [-1, 1] so we have to convert to [0,1] for this conjunction to be valid
     return ((f_w1_list + 1) /2) * ((f_w2_list + 1)/2)
 
-  def literal_guesser(board_name, representation, candidates, vocab, boards):
+  def literal_guesser(board_name, representations, candidates, vocab, boards):
     '''
     inputs are:
     (1) board name ("e1_board1_words"), 
-    (2) representation ("glove"), and 
+    (2) representations (representations["glove"]), and 
     (3) candidates (a list ['apple', 'mango'] etc.)
 
     output:
@@ -307,7 +307,7 @@ class RSA:
     restricted_boardmatrix = boardmatrix[:,candidate_index]
     return softmax(restricted_boardmatrix, axis=0)
 
-  def pragmatic_speaker(board_name, beta, costweight, representation, candidates, vocab, boards):
+  def pragmatic_speaker(board_name, beta, costweight, representations, candidates, vocab, boards):
     '''
     inputs:
     (1) board name ("e1_board1_words")
@@ -322,7 +322,7 @@ class RSA:
 
     '''
     candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
-    literal_guesser_prob = np.log(RSA.literal_guesser(board_name, representation, candidates, vocab, boards))
+    literal_guesser_prob = np.log(RSA.literal_guesser(board_name, representations, candidates, vocab, boards))
     clues_cost = -np.array([list(vocab["LgSUBTLWF"])[i] for i in candidate_index])
     utility = (1-costweight) * literal_guesser_prob - costweight * clues_cost
     return softmax(beta * utility, axis = 1)
