@@ -331,7 +331,7 @@ class RSA:
     return softmax(beta * utility, axis = 1)
 
 class nonRSA:
-  def speaker_targetboard(context_board, alpha, beta, candidates, representations, modelname, vocab):
+  def speaker_targetboard(context_board, alpha, beta, candidates, representations, modelname, vocab, target_df):
     '''
     takes in a given board, wordpairs, and a set of possible candidates, and returns the likelihood based on:
     alpha(clue-w1*clue-w2) - (1-alpha)*(average of all other words on board)
@@ -342,9 +342,10 @@ class nonRSA:
     (2) alpha: ranges from 0 to 1.1 in 0.1 increments
     (3) beta: tuning parameter
     (4) candidates: list of candidates to consider
-    (4) representation: embedding space to consider, representations
-    (5) modelname: 'glove'
-    (5) vocab: search space over which likelihoods will be calculated
+    (5) representation: embedding space to consider, representations
+    (6) modelname: 'glove'
+    (7) vocab: search space over which likelihoods will be calculated
+    (8) target_df: a dataframe that contains info about test wordpairs & which boards they come from
 
     output:
     softmax of clue likelihoods over specified candidates
