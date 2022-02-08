@@ -246,13 +246,14 @@ class RSA:
     '''
     return list(board_combos[board_name]['wordpair'])
 
-  def create_board_matrix(combs_df, context_board, embeddings, vocab):
+  def create_board_matrix(combs_df, context_board, representations, modelname, vocab):
     '''
     inputs:
     (1) combs_df: all combination pairs from a given board
     (2) context_board: the specific board ("e1_board1_words")
-    (3) the embeddings (representations['glove'])
-    (4) the vocab over which computations are occurring
+    (3) representation: embedding space to consider, representations
+    (4) modelname: 'glove'
+    (5) the vocab over which computations are occurring
 
     output:
     product similarities of given vocab to each wordpair
@@ -261,7 +262,7 @@ class RSA:
     board_df = vocab[vocab['vocab_word'].isin(context_board)]
     board_word_indices = list(board_df.index)
     board_words = board_df["vocab_word"]
-    board_vectors = embeddings[board_word_indices]
+    board_vectors = representations[modelname][board_word_indices]
 
     ## clue_sims is the similarity of ALL clues in full searchspace (size N) to EACH word on board (size 20)
     clue_sims = 1 - scipy.spatial.distance.cdist(board_vectors, embeddings, 'cosine')
@@ -282,12 +283,13 @@ class RSA:
     # note that cosine is in range [-1, 1] so we have to convert to [0,1] for this conjunction to be valid
     return ((f_w1_list + 1) /2) * ((f_w2_list + 1)/2)
 
-  def literal_guesser(board_name, representations, candidates, vocab, boards):
+  def literal_guesser(board_name, representations, modelname, candidates, vocab, boards):
     '''
     inputs are:
     (1) board name ("e1_board1_words"), 
-    (2) representations (representations["glove"]), and 
-    (3) candidates (a list ['apple', 'mango'] etc.)
+    (2) representation: embedding space to consider, representations
+    (3) modelname: 'glove'
+    (4) candidates (a list ['apple', 'mango'] etc.)
 
     output:
     softmax likelihood of different wordpairs under a given set of candidates
@@ -301,30 +303,78 @@ class RSA:
             for board_name in boards.keys()}
       for (key, embedding) in representations.items()
     }
-    representation = list(representations.keys())[0]
-    boardmatrix = board_matrices[representation][board_name]
+    boardmatrix = board_matrices[modelname][board_name]
     ## here we restrict the softmax to only certain candidates
     candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
     restricted_boardmatrix = boardmatrix[:,candidate_index]
     return softmax(restricted_boardmatrix, axis=0)
 
-  def pragmatic_speaker(board_name, beta, costweight, representations, candidates, vocab, boards):
+  def pragmatic_speaker(board_name, beta, costweight, representations, modelname, candidates, vocab, boards):
     '''
     inputs:
     (1) board name ("e1_board1_words")
     (2) beta: optimized parameter 
     (3) costweight: optimized weight to freequency 
-    (2) representations (representations["glove"]), and 
-    (5) candidates (a list of words/clues to iterate over)
-    (6) vocab
+    (4) representation: embedding space to consider, representations
+    (5) modelname: 'glove'
+    (6) candidates (a list of words/clues to iterate over)
+    (7) vocab
 
     outputs:
     softmax likelihood of each possible clue in "candidates"
 
     '''
     candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
-    literal_guesser_prob = np.log(RSA.literal_guesser(board_name, representations, candidates, vocab, boards))
+    literal_guesser_prob = np.log(RSA.literal_guesser(board_name, representations[modelname], candidates, vocab, boards))
     clues_cost = -np.array([list(vocab["LgSUBTLWF"])[i] for i in candidate_index])
     utility = (1-costweight) * literal_guesser_prob - costweight * clues_cost
     return softmax(beta * utility, axis = 1)
+
+class nonRSA:
+  def speaker_targetboard(context_board, alpha, beta, candidates, representations, modelname, vocab):
+    '''
+    takes in a given board, wordpairs, and a set of possible candidates, and returns the likelihood based on:
+    alpha(clue-w1*clue-w2) - (1-alpha)*(average of all other words on board)
+    i.e., maximize similarity to wordpair and minimize similarity to other words
+
+    inputs:
+    (1) context_board: a specfic game board (e.g., boards['e1_board10_words'])
+    (2) alpha: ranges from 0 to 1.1 in 0.1 increments
+    (3) beta: tuning parameter
+    (4) candidates: list of candidates to consider
+    (4) representation: embedding space to consider, representations
+    (5) modelname: 'glove'
+    (5) vocab: search space over which likelihoods will be calculated
+
+    output:
+    softmax of clue likelihoods over specified candidates
+    '''
+    # grab subset of words in given board and their corresponding glove vectors
+    board_df = vocab[vocab['vocab_word'].isin(context_board)]
+    board_word_indices = list(board_df.index)
+    board_words = board_df["vocab_word"]
+    board_vectors = representations[modelname][board_word_indices]
+
+    ## clue_sims is the similarity of ALL clues in full searchspace (size N) to EACH word on board (size 20)
+    
+    ### NEED TO FIX THIS TO ONLY CONSIDER CANDIDATES!!
+    candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
+    candidate_embeddings = representations[modelname][candidate_index]
+
+    clue_sims = (1-scipy.spatial.distance.cdist(board_vectors, candidate_embeddings, 'cosine') + 1 ) / 2
+    target_sample = target_df[target_df['Word1'].isin(board_df["vocab_word"]) & target_df['Word2'].isin(board_df["Word"])]
+    w1_index = [list(board_df["vocab_word"]).index(row["Word1"]) for index, row in target_sample.iterrows()]
+    w2_index = [list(board_df["vocab_word"]).index(row["Word2"]) for index, row in target_sample.iterrows()]
+    clue_w1 = clue_sims[w1_index]
+    clue_w2 = clue_sims[w2_index]
+    clue_prod = np.multiply(clue_w1,clue_w2)
+
+    # deleting the two target words to compute average similarity to other words on the board
+    clue_sims_new = np.array([np.delete(clue_sims, [w1_index[i], w2_index[i]], axis=0) for i in range(len(w1_index))])
+    avg_sim = np.mean(clue_sims_new, axis=1)
+
+    ## FUNC = alpha(clue_w1*clue_w2) + (1-alpha)*(average of other board words)
+
+    func = np.subtract((alpha)*clue_prod, (1-alpha)*avg_sim)
+    return softmax(beta * func, axis=1)
   
