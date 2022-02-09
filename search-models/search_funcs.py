@@ -24,6 +24,7 @@ import itertools
 import sys
 import scipy.spatial.distance
 from scipy.special import softmax
+import walker
 
 class search:
   def create_similarity_matrix(matrix):
@@ -40,7 +41,59 @@ class search:
     matrix = matrix.reshape((N,N))
     return matrix
 
-  def random_walk(word, n_steps, vocab, Graph):
+  def create_graph(similarity_matrix, threshold):
+    '''
+    inputs:
+    (1) a NxN similarity matrix for which a graph will be created
+    (2) threshold below which to exclude similarity values
+
+    output:
+    A networkX weighted graph with N nodes 
+    '''
+    ## make diagonal 0 and all values below a certain threshold also 0: can parameterize this eventually
+    x = np.copy(similarity_matrix)
+    np.fill_diagonal(x, 0)
+    x[x < threshold] = 0
+    G = nx.from_numpy_matrix(np.matrix(x), create_using=nx.DiGraph)
+    return G
+  
+  def random_walk(word, n_steps, n_walks, vocab, Graph):
+    '''
+    A fast random walk implementation.
+    inputs:
+    (1) the starting word ('apple')
+    (2) n_steps: number of steps to run the random walk for
+    (3) n_walks: number of walks to run 
+    (3) vocab: the vocabulary from which "word" is selected
+    (4) Graph: the networkX graph on which the walk will be run
+
+    outputs:
+    (1) a dictionary of 
+    key: indices of all words, and 
+    val: number of times the word was visited across all walks
+    '''
+
+    start_node = list(vocab.vocab_word).index(word) 
+
+    walks = walker.random_walks(Graph, n_walks=n_walks, walk_len=n_steps,start_nodes=[start_node])
+    ## walker returns a n_walks x n_steps np array
+    ## we need to find the number of times each node was visited across each of these walks 
+    # gives counts of each node visited 
+
+    ## create dictionary with 0 counts
+    dict_counter = dict.fromkeys(range(len(vocab)),0)
+    
+    my_dict = dict.fromkeys(range(len(vocab)),0)
+    for i in range(X.shape[0]):
+      u, c = np.unique(X[i], return_counts=True)
+      my_dict = dict((key,my_dict[key]+ c[u.tolist().index(key)]) if key in u.tolist() else (key,value) for key,value in my_dict.items()  )
+      
+    ## can return sorted array if needed
+    #new_dict = dict( sorted(my_dict.items(), key=operator.itemgetter(1),reverse=True))
+
+    return np.fromiter(my_dict.values(), dtype=float)
+
+  def old_random_walk(word, n_steps, vocab, Graph):
     '''
     A random walk implementation.
     inputs:
@@ -89,22 +142,7 @@ class search:
 
     return words_visited, np.fromiter(dict_counter.values(), dtype=float)
   
-  def create_graph(similarity_matrix, threshold):
-    '''
-    inputs:
-    (1) a NxN similarity matrix for which a graph will be created
-    (2) threshold below which to exclude similarity values
 
-    output:
-    A networkX weighted graph with N nodes 
-    '''
-    ## make diagonal 0 and all values below a certain threshold also 0: can parameterize this eventually
-    x = np.copy(similarity_matrix)
-    np.fill_diagonal(x, 0)
-    x[x < threshold] = 0
-    G = nx.from_numpy_matrix(np.matrix(x), create_using=nx.DiGraph)
-    return G
-  
   def union_intersection(w1, w2, n_steps, n_walks, vocabulary, Graph):
     '''
     computes the union & intersection of n_walks random walks of n_steps from w1 and w2
@@ -121,9 +159,8 @@ class search:
     '''
 
     # starts n_walks independent random walks for n_steps, and computes union and intersection 
-    rw_w1 = np.sum(np.array([search.random_walk(w1, n_steps, vocabulary, Graph)[1] for i in range(n_walks)]), axis = 0)
-    rw_w2 = np.sum(np.array([search.random_walk(w2, n_steps, vocabulary, Graph)[1] for i in range(n_walks)]), axis = 0)
-
+    rw_w1 = search.random_walk(w1, n_steps, n_walks, vocabulary, Graph)
+    rw_w2 = search.random_walk(w2, n_steps, n_walks, vocabulary, Graph)
 
     v = vocabulary.copy()
 
@@ -149,7 +186,7 @@ class search:
 
     return union_df, intersection_df
 
-  def predication_vector(sim_matrix, w1, w2, m, k):
+  def predication_vector(sim_matrix, w1, w2, m, k, vocab):
     """
     # computes a predication vector based on kintsch's predication algorithm
     # in this algorithm, first m neighbors of w1 are computed
@@ -333,7 +370,8 @@ class RSA:
 class nonRSA:
   def speaker_targetboard(context_board, alpha, beta, candidates, representations, modelname, vocab, target_df):
     '''
-    takes in a given board, wordpairs, and a set of possible candidates, and returns the likelihood based on:
+    takes in a given board, wordpairs, and a set of possible candidates, and returns the likelihood of 
+    each candidate for each target wordpair on that board based on:
     alpha(clue-w1*clue-w2) - (1-alpha)*(average of all other words on board)
     i.e., maximize similarity to wordpair and minimize similarity to other words
 
