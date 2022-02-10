@@ -89,98 +89,60 @@ class search:
     # [list(vocab.vocab_word)[i] for i in words]
     return ordervisited_arr
 
-  def old_random_walk(word, n_steps, vocab, Graph):
-    '''
-    A random walk implementation.
-    inputs:
-    (1) the starting word ('apple')
-    (2) n_steps: number of steps to run the random walk for
-    (3) vocab: the vocabulary from which "word" is selected
-    (4) Graph: the networkX graph on which the walk will be run
-
-    outputs:
-    (1) all words visited during the walk
-    (2) number of times the word was visited
-    '''
-    # run this RW until all nodes have been visited at least once
-    nodes_visited = []
-    random_node = list(vocab.vocab_word).index(word) 
-    nodes_visited.append(random_node)
-    dict_counter = {} #initialise the value for all nodes as 0 (i.e., each node has been visited 0 times)
-    for i in range(Graph.number_of_nodes()):
-        dict_counter[i] = 0
-    # update dict_count for the chosen random node by 1 (since walk starts here)
-    dict_counter[random_node] = dict_counter[random_node]+1
-
-    #Traversing through the neighbors of start node
-    #increment by traversing through all neighbors nodes ()
-    for i in range(n_steps):
-        list_for_nodes = list(Graph.neighbors(random_node))
-        neighbors = {}
-        for n in list_for_nodes:
-          neighbors[n] = Graph.edges[(random_node,n)]['weight']
-        if len(list_for_nodes)==0:
-          # if random_node having no outgoing edges
-          # choose a different random node and update its visit count
-          random_node = random.choice([i for i in range(Graph.number_of_nodes())])
-          dict_counter[random_node] = dict_counter[random_node]+1
-          nodes_visited.append(random_node)
-        else:
-          #choose a node randomly from neighbors of current random_node
-          random_node = random.choices(population = list_for_nodes, k = 1,
-                  weights=list(neighbors.values()))[0]
-          dict_counter[random_node] = dict_counter[random_node]+1
-          nodes_visited.append(random_node)
-            
-    ## return the words visited and the counts of each time a node was visited (in the order of vocab) as a numpy array
-
-    words_visited = [list(vocab.vocab_word)[index] for index in nodes_visited]
-
-    return words_visited, np.fromiter(dict_counter.values(), dtype=float)
-  
-
   def union_intersection(w1, w2, n_steps, n_walks, vocabulary, Graph):
     '''
     computes the union & intersection of n_walks random walks of n_steps from w1 and w2
 
     inputs:
-    (1) rw_w1 & rw_w2: outputs of two random walks starting from w1 and w2
-    
-    (4) vocabulary: the vocab from which w1 & w2 are selected
+    (1) w1 & w2: the two words for which random walks will be initiated
+    (2) n_steps: number of steps to consider returning data for 
+    (3) vocabulary: the vocab from which w1 & w2 are selected
+    (4) Graph: the underlying graph for random walk
+
 
     outputs:
-    (1) union_df: contains the words visited by EITHER words in descending order of times visited
-    (2) intersection_df: contains the words visited by BOTH words in descending order of times visited
+    (1) union_list: contains the words visited by EITHER words in descending order of times visited across n_steps
+    (2) intersection_list: contains the words visited by BOTH words in descending order of times visited acr
 
     '''
 
-    # starts n_walks independent random walks for n_steps, and computes union and intersection 
-    rw_w1 = search.random_walk(w1, n_steps, n_walks, vocabulary, Graph)[1]
-    rw_w2 = search.random_walk(w2, n_steps, n_walks, vocabulary, Graph)[1]
+    # starts n_walks independent random walks of size vocab
+    rw_w1 = search.random_walk(w1, len(vocab), n_walks, vocabulary, Graph)
+    rw_w2 = search.random_walk(w2, len(vocab), n_walks, vocabulary, Graph)
 
-    v = vocabulary.copy()
+    # we need another parameter that controls the length of the walk to take into account :n_steps
+    # maybe we calculate union/intersection for ALL n-step walks?
 
-    v["w1_visited_count"] = rw_w1.tolist()
-    v["w2_visited_count"] = rw_w2.tolist()
+    union_list = pd.DataFrame()
+    intersection_list = pd.DataFrame()
 
-    v["w1*w2"] = v["w1_visited_count"]*v["w2_visited_count"]
+    for i in range(n_steps):
 
-    ## compute non-zero, i.e., all visited nodes 
+      # count the number of times a node was visited in i steps
+      w1_main = np.sum(rw_w1[:,:i], axis = 1).tolist()
+      w2_main = np.sum(rw_w2[:,:i], axis = 1).tolist()
+      v = vocabulary.copy()
+      v["w1_visited_count"] = w1_main
+      v["w2_visited_count"] = w2_main
+      v["w1*w2"] = v["w1_visited_count"]*v["w2_visited_count"]
 
-    nonzero_w1 = list(v.loc[v['w1_visited_count'] != 0].vocab_word)
-    nonzero_w2 = list(v.loc[v['w2_visited_count'] != 0].vocab_word)
+      ## compute non-zero, i.e., all visited nodes 
+      nonzero_w1 = list(v.loc[v['w1_visited_count'] != 0].vocab_word)
+      nonzero_w2 = list(v.loc[v['w2_visited_count'] != 0].vocab_word)
 
-    ## compute union and intersection
+      ## compute union and intersection
+      union = set(nonzero_w1).union(set(nonzero_w2))
+      intersection = set(nonzero_w1).intersection(set(nonzero_w2))
+      ## we also need the counts of these visited nodes, sorted by nodes visited highly by both words
+      union_df = v.loc[v['vocab_word'].isin(list(union))].sort_values(by='w1*w2', ascending=False)
+      union_df["n_steps"] = i+1
+      intersection_df = v.loc[v['vocab_word'].isin(list(intersection))].sort_values(by='w1*w2', ascending=False)
+      intersection_df["n_steps"] = i+1
 
-    union = set(nonzero_w1).union(set(nonzero_w2))
-    intersection = set(nonzero_w1).intersection(set(nonzero_w2))
+      union_list =  pd.concat([union_list, union_df])
+      intersection_list = pd.concat([intersection_list, intersection_df])
 
-    ## we also need the counts of these visited nodes, sorted by nodes visited highly by both words
-
-    union_df = v.loc[v['vocab_word'].isin(list(union))].sort_values(by='w1*w2', ascending=False)
-    intersection_df = v.loc[v['vocab_word'].isin(list(intersection))].sort_values(by='w1*w2', ascending=False)
-
-    return union_df, intersection_df
+    return union_list, intersection_list
 
   def predication_vector(sim_matrix, w1, w2, m, k, vocab):
     """
@@ -251,6 +213,56 @@ class search:
     centroid_indices = np.argpartition(cosine, -k)[-k:].tolist()
     centroid_words = [list(vocab.vocab_word)[i] for i in centroid_indices]
     return centroid_words
+  
+  def old_random_walk(word, n_steps, vocab, Graph):
+    '''
+    A random walk implementation.
+    inputs:
+    (1) the starting word ('apple')
+    (2) n_steps: number of steps to run the random walk for
+    (3) vocab: the vocabulary from which "word" is selected
+    (4) Graph: the networkX graph on which the walk will be run
+
+    outputs:
+    (1) all words visited during the walk
+    (2) number of times the word was visited
+    '''
+    # run this RW until all nodes have been visited at least once
+    nodes_visited = []
+    random_node = list(vocab.vocab_word).index(word) 
+    nodes_visited.append(random_node)
+    dict_counter = {} #initialise the value for all nodes as 0 (i.e., each node has been visited 0 times)
+    for i in range(Graph.number_of_nodes()):
+        dict_counter[i] = 0
+    # update dict_count for the chosen random node by 1 (since walk starts here)
+    dict_counter[random_node] = dict_counter[random_node]+1
+
+    #Traversing through the neighbors of start node
+    #increment by traversing through all neighbors nodes ()
+    for i in range(n_steps):
+        list_for_nodes = list(Graph.neighbors(random_node))
+        neighbors = {}
+        for n in list_for_nodes:
+          neighbors[n] = Graph.edges[(random_node,n)]['weight']
+        if len(list_for_nodes)==0:
+          # if random_node having no outgoing edges
+          # choose a different random node and update its visit count
+          random_node = random.choice([i for i in range(Graph.number_of_nodes())])
+          dict_counter[random_node] = dict_counter[random_node]+1
+          nodes_visited.append(random_node)
+        else:
+          #choose a node randomly from neighbors of current random_node
+          random_node = random.choices(population = list_for_nodes, k = 1,
+                  weights=list(neighbors.values()))[0]
+          dict_counter[random_node] = dict_counter[random_node]+1
+          nodes_visited.append(random_node)
+            
+    ## return the words visited and the counts of each time a node was visited (in the order of vocab) as a numpy array
+
+    words_visited = [list(vocab.vocab_word)[index] for index in nodes_visited]
+
+    return words_visited, np.fromiter(dict_counter.values(), dtype=float)
+  
 
 class RSA:
 
