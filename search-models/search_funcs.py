@@ -64,13 +64,11 @@ class search:
     (1) the starting word ('apple')
     (2) n_steps: number of steps to run the random walk for
     (3) n_walks: number of walks to run 
-    (3) vocab: the vocabulary from which "word" is selected
+    (3) vocab: the vocabulary from which "word" is selected of size N
     (4) Graph: the networkX graph on which the walk will be run
 
     outputs:
-    (1) a dictionary of 
-    key: indices of all words, and 
-    val: number of times the word was visited across all walks
+    (1) a N x n_steps array with counts of how many times a node was visited in nth position
     '''
 
     start_node = list(vocab.vocab_word).index(word) 
@@ -80,18 +78,16 @@ class search:
     ## we need to find the number of times each node was visited across each of these walks 
     # gives counts of each node visited 
 
-    ## create dictionary with 0 counts
-    dict_counter = dict.fromkeys(range(len(vocab)),0)
-    
-    my_dict = dict.fromkeys(range(len(vocab)),0)
-    for i in range(X.shape[0]):
-      u, c = np.unique(X[i], return_counts=True)
-      my_dict = dict((key,my_dict[key]+ c[u.tolist().index(key)]) if key in u.tolist() else (key,value) for key,value in my_dict.items()  )
-      
-    ## can return sorted array if needed
-    #new_dict = dict( sorted(my_dict.items(), key=operator.itemgetter(1),reverse=True))
+    df = pd.DataFrame(walks)
+    X = df.apply(pd.Series.value_counts).fillna(0)
+    ordervisited_arr = pd.DataFrame(np.zeros((len(vocab), walks.shape[1]))) # 2d array N x n_steps
+    ordervisited_arr = X.combine_first(ordervisited_arr).values
 
-    return np.fromiter(my_dict.values(), dtype=float)
+    # times_visited is just np.sum(ordervisited_arr, axis = 1)
+    # code to obtain which words are most visited in some "k" steps:
+    # words = (-np.sum(ordervisited_arr[:,:100], axis = 1)).argsort()[:20]
+    # [list(vocab.vocab_word)[i] for i in words]
+    return ordervisited_arr
 
   def old_random_walk(word, n_steps, vocab, Graph):
     '''
@@ -159,8 +155,8 @@ class search:
     '''
 
     # starts n_walks independent random walks for n_steps, and computes union and intersection 
-    rw_w1 = search.random_walk(w1, n_steps, n_walks, vocabulary, Graph)
-    rw_w2 = search.random_walk(w2, n_steps, n_walks, vocabulary, Graph)
+    rw_w1 = search.random_walk(w1, n_steps, n_walks, vocabulary, Graph)[1]
+    rw_w2 = search.random_walk(w2, n_steps, n_walks, vocabulary, Graph)[1]
 
     v = vocabulary.copy()
 
