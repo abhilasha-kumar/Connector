@@ -107,8 +107,8 @@ class search:
     '''
 
     # starts n_walks independent random walks of size vocab
-    rw_w1 = search.random_walk(w1, len(vocab), n_walks, vocabulary, Graph)
-    rw_w2 = search.random_walk(w2, len(vocab), n_walks, vocabulary, Graph)
+    rw_w1 = search.random_walk(w1, len(vocabulary), n_walks, vocabulary, Graph)
+    rw_w2 = search.random_walk(w2, len(vocabulary), n_walks, vocabulary, Graph)
 
     # we need another parameter that controls the length of the walk to take into account :n_steps
     # maybe we calculate union/intersection for ALL n-step walks?
