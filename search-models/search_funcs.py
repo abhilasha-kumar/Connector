@@ -425,7 +425,7 @@ class nonRSA:
     func = np.subtract((alpha)*clue_prod, (1-alpha)*avg_sim)
     return softmax(beta * func, axis=1)
 
-  def speaker_targetboard_cluescores(modelnames, optimal_params, board_combos, boards, candidates, vocab, target_df, cluedata):
+  def speaker_targetboard_cluescores(modelnames, optimal_params, board_combos, boards, candidates, vocab, representations, target_df, cluedata):
     '''
     returns a dataframe of likelihoods of each possible clue in an input df, for different alpha values
 
@@ -436,7 +436,7 @@ class nonRSA:
     (4) boards: the actual boards variable (input from json file)
     (5) candidates: list of candidates to consider
     (6) vocab: search space over which likelihoods will be calculated
-    (7) representation: embedding space to consider, representations
+    (7) representations: embedding space to consider, representations
     (8) target_df: a dataframe that contains info about test wordpairs & which boards they come from
     (9) cluedata: a df of each clue for which we want a likelihood score
 
