@@ -348,10 +348,10 @@ class RSA:
 
     '''
 
-    board_combos = {board_name : compute_board_combos(board_name,boards) for board_name in boards.keys()}
+    board_combos = {board_name : RSA.compute_board_combos(board_name,boards) for board_name in boards.keys()}
 
     board_matrices = {
-      key : {board_name :create_board_matrix(board_combos[board_name], boards[board_name], representations, modelname, vocab, candidates) 
+      key : {board_name :RSA.create_board_matrix(board_combos[board_name], boards[board_name], representations, modelname, vocab, candidates) 
             for board_name in boards.keys()}
       for (key, embedding) in representations.items()
     }
@@ -454,7 +454,7 @@ class RSA:
 
             candidate_df = vocab[vocab["vocab_word"].isin(candidates)].reset_index()
 
-            speaker_prob, speaker_rank = get_speaker_scores(expdata_board, speaker_word_pairs, y, y_sorted, candidate_df)
+            speaker_prob, speaker_rank = RSA.get_speaker_scores(expdata_board, speaker_word_pairs, y, y_sorted, candidate_df)
             expdata_board.loc[:,"representation"] = modelname
             expdata_board.loc[:,"prag_speaker_probs"] = speaker_prob
             expdata_board.loc[:,"prag_speaker_rank"] = speaker_rank
