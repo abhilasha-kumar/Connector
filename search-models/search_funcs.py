@@ -403,8 +403,8 @@ class RSA:
         # find index of clue
         if clue1 in list(candidate_df["vocab_word"]):
             clue_index = list(candidate_df["vocab_word"]).index(clue1)
-            clue_probs = y[wordpair_index, clue_index]
-            clue_rank = np.nonzero(y_sorted==clue_index)[1][wordpair_index]
+            clue_probs = probsarray[wordpair_index, clue_index]
+            clue_rank = np.nonzero(probsarray_sorted==clue_index)[1][wordpair_index]
         else:
             clue_rank = "NA"
             clue_probs = "NA"
