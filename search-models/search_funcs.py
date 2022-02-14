@@ -424,4 +424,82 @@ class nonRSA:
 
     func = np.subtract((alpha)*clue_prod, (1-alpha)*avg_sim)
     return softmax(beta * func, axis=1)
-  
+
+  def speaker_targetboard_cluescores(modelnames, optimal_params, board_combos, boards, candidates, vocab, target_df, cluedata):
+    '''
+    returns a dataframe of likelihoods of each possible clue in an input df, for different alpha values
+
+    inputs:
+    (1) modelnames = list of models ['glove', 'swow']
+    (2) optimal parameter dictionary with optimal beta parameter for each modelname
+    (3) board_combos: output of compute_board_combos
+    (4) boards: the actual boards variable (input from json file)
+    (5) candidates: list of candidates to consider
+    (6) vocab: search space over which likelihoods will be calculated
+    (7) representation: embedding space to consider, representations
+    (8) target_df: a dataframe that contains info about test wordpairs & which boards they come from
+    (9) cluedata: a df of each clue for which we want a likelihood score
+
+    output:
+    likelihood of each clue at different alpha levels for different modelnames
+    '''
+
+    target_df["wordpair"] = target_df["Word1"] + "-" + target_df["Word2"]
+
+    clue_board_df_main = pd.DataFrame()
+
+    for modelname in modelnames: 
+      for alpha in np.arange(0,1.1, 0.1):
+        ## for a given alpha, compute the clue similarities at the board level 
+        beta = optimal_params[modelname][0]
+        speaker_board_probs = {
+            board_name : nonRSA.speaker_targetboard(board_name, alpha, beta, candidates, representations, modelname, vocab, target_df)
+            for board_name in boards.keys()
+        }   
+        
+        for board in speaker_board_probs.keys():
+          
+          ## get the clues we need scores for from expdatanew
+          clue_main = cluedata.loc[cluedata['boardnames'] == board]
+          target_main = target_df.loc[target_df['boardnames'] == board]
+          
+          target_main.reset_index(inplace = True)
+          #print(target_main)
+
+          for index, row in clue_main.iterrows():
+            if row["Clue1"] in list(sample_df["Word"]):
+              #print("clue is:", row["Clue1"])
+              clue_index = list(sample_df["Word"]).index(row["Clue1"])
+              #print("clue_index:",clue_index)
+              wordpair = row["wordpair"]
+              ## need to figure out specific wordpair this clue corresponds to
+              wordpair_index = target_main.index[(target_main['wordpair'] == wordpair)].tolist()[0]
+              #print("wordpair_index:",wordpair_index)
+              # get a sorted array of the clue scores
+              mainscores = speaker_board_probs[board][wordpair_index]
+              sorted_clue_probs = np.argsort(-mainscores).tolist()
+              #print("sorted_clue_probs_indices = ", sorted_clue_probs)
+              
+              # we next obtain the score for each clue for a specific wordpair
+              clue_similarity = speaker_board_probs[board][wordpair_index][clue_index]
+              # want to find index of this particular clue in the overall distribution
+              clue_rank = sorted_clue_probs.index(clue_index)
+              #print("clue_rank:",clue_rank)
+            else:
+              clue_similarity = "NA"
+              clue_rank = "NA"
+            
+            clue_board_df = pd.DataFrame({'boardnames': [board]})
+            clue_board_df["wordpair"] = wordpair
+            clue_board_df["Clue1"] = row["Clue1"]
+            clue_board_df["clue_score"] = clue_similarity
+            clue_board_df["clue_rank"] = clue_rank
+            clue_board_df["alpha"] = alpha
+            clue_board_df["Model"] = modelname
+              
+            clue_board_df_main = pd.concat([clue_board_df_main, clue_board_df])
+    
+    return clue_board_df_main
+      
+
+      
