@@ -291,7 +291,7 @@ class RSA:
     '''
     return list(board_combos[board_name]['wordpair'])
 
-  def create_board_matrix(combs_df, context_board, representations, modelname, vocab):
+  def create_board_matrix(combs_df, context_board, representations, modelname, vocab, candidates):
     '''
     inputs:
     (1) combs_df: all combination pairs from a given board
@@ -299,6 +299,7 @@ class RSA:
     (3) representation: embedding space to consider, representations
     (4) modelname: 'glove'
     (5) the vocab over which computations are occurring
+    (6) candidates over which the board matrix needs to be computed
 
     output:
     product similarities of given vocab to each wordpair
@@ -309,7 +310,13 @@ class RSA:
     board_words = board_df["vocab_word"]
     board_vectors = representations[modelname][board_word_indices]
 
-    ## clue_sims is the similarity of ALL clues in full searchspace (size N) to EACH word on board (size 20)
+    # need to obtain embeddings of candidate set
+
+    candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
+
+    embeddings = representations[modelname][candidate_index]
+
+    ## clue_sims is the similarity of ALL clues in full candidate space to EACH word on board (size 20)
     clue_sims = 1 - scipy.spatial.distance.cdist(board_vectors, embeddings, 'cosine')
 
     ## once we have the similarities of the clue to the words on the board
@@ -341,18 +348,15 @@ class RSA:
 
     '''
 
-    board_combos = {board_name : RSA.compute_board_combos(board_name,boards) for board_name in boards.keys()}
+    board_combos = {board_name : compute_board_combos(board_name,boards) for board_name in boards.keys()}
 
     board_matrices = {
-      key : {board_name : RSA.create_board_matrix(board_combos[board_name], boards[board_name], representations, embedding, vocab) 
+      key : {board_name :create_board_matrix(board_combos[board_name], boards[board_name], representations, modelname, vocab, candidates) 
             for board_name in boards.keys()}
       for (key, embedding) in representations.items()
     }
     boardmatrix = board_matrices[modelname][board_name]
-    ## here we restrict the softmax to only certain candidates
-    candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
-    restricted_boardmatrix = boardmatrix[:,candidate_index]
-    return softmax(restricted_boardmatrix, axis=0)
+    return softmax(boardmatrix, axis=0)
 
   def pragmatic_speaker(board_name, beta, costweight, representations, modelname, candidates, vocab, boards):
     '''
@@ -384,6 +388,9 @@ class RSA:
     (3) probsarray: a 3 x candidates array of pragmatic speaker predictions
     (4) probsarray_sorted: a sorted 3 x candidates array of pragmatic speaker predictions
     (5) candidate_df: a vocab-like df of only candidates
+
+    outputs:
+    softmax probabilities and ranks for each candidate in cluedata
     '''
     speaker_prob = []
     speaker_rank = []
@@ -391,11 +398,10 @@ class RSA:
         clue1 = row["Clue1"]
         wordpair = str(row["wordpair"]).replace(" ", "")
         wordpair_index = speaker_word_pairs.index(wordpair)
-        w1_index, w2_index = [list(vocab["vocab_word"]).index(word) for word in wordpair.split('-')]
         
         # find index of clue
-        if clue1 in list(vocab["vocab_word"]):
-            clue_index = list(vocab["vocab_word"]).index(clue1)
+        if clue1 in list(candidate_df["vocab_word"]):
+            clue_index = list(candidate_df["vocab_word"]).index(clue1)
             clue_probs = y[wordpair_index, clue_index]
             clue_rank = np.nonzero(y_sorted==clue_index)[1][wordpair_index]
         else:
@@ -404,7 +410,53 @@ class RSA:
 
         speaker_prob.append(clue_probs)
         speaker_rank.append(clue_rank)
-    return speaker_prob, speaker_rank
+      return speaker_prob, speaker_rank
+
+  def get_speaker_df(representations, combined_boards_df,params, candidates, vocab, cluedata ):
+    '''
+    returns a complete dataframe of pragmatic speaker ranks & probabilities over different representations 
+    over a given set of candidates
+
+    inputs:
+    (1) representations space
+    (2) combined_boards_df: dataframe with all board words
+    (3) params: optimal parameter dictionary for different representation keys
+    (4) candidates: the words over which the ranks/probs need to be computed
+    (5) vocab :full vocabulary
+    (6) cluedata: the empirical cluedata
+
+    outputs:
+    a dataframe with clue ranks & probs for each possible candidate & representation
+    '''
+    speakerprobs_df = pd.DataFrame()
+    for modelname in representations.keys() :
+        for index, row in combined_boards_df.iterrows():
+            board = row["boardwords"]
+            boardname = row["boardnames"]
+            wordpairlist = RSA.get_wordpair_list(board_combos, boardname)
+            speaker_word_pairs = target_df[(target_df["boardnames"] == row["boardnames"]) & 
+                                          (target_df["Experiment"] == row["Experiment"])]["wordpair"]
+            speaker_word_pairs = list(speaker_word_pairs)
+            speaker_df_new = pd.DataFrame({'wordpair': speaker_word_pairs})
+            params = params[modelname]
+            speaker_model = RSA.pragmatic_speaker(boardname, params[0], params[1],representations, modelname, candidates, vocab, boards)
+            ## this is created at the BOARD level
+            y = np.array([speaker_model[wordpairlist.index(wordpair)] for wordpair in speaker_word_pairs])
+            y_sorted = np.argsort(-y)
+
+            ## so y has 3 vectors of clue probabilities (the 3 pairs on this board)
+            ## now we need to go into cluedata and score the probabilities for those specific clues
+            expdata_board = cluedata[(cluedata["Board"] == row["Board"]) & (cluedata["Experiment"] == row["Experiment"]) & (cluedata["Clue1"].isin(candidates))]
+
+            candidate_df = vocab[vocab["vocab_word"].isin(candidates)].reset_index()
+
+            speaker_prob, speaker_rank = get_speaker_scores(expdata_board, speaker_word_pairs, y, y_sorted, candidate_df)
+            expdata_board.loc[:,"representation"] = modelname
+            expdata_board.loc[:,"prag_speaker_probs"] = speaker_prob
+            expdata_board.loc[:,"prag_speaker_rank"] = speaker_rank
+            speakerprobs_df = pd.concat([speakerprobs_df, expdata_board])
+
+    return speakerprobs_df
 
 
 
