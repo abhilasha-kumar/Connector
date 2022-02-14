@@ -455,7 +455,7 @@ class nonRSA:
         print(f"for {modelname} and alpha {alpha}")
         
         speaker_board_probs = {
-            board_name : search_funcs.nonRSA.speaker_targetboard(boards[board_name], alpha, beta, candidates, representations, modelname, vocab, target_df)
+            board_name : nonRSA.speaker_targetboard(boards[board_name], alpha, beta, candidates, representations, modelname, vocab, target_df)
             for board_name in boards.keys()
         }   
         
