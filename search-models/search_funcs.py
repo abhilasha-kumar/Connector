@@ -368,6 +368,7 @@ class RSA:
     (5) modelname: 'glove'
     (6) candidates (a list of words/clues to iterate over)
     (7) vocab
+    (8) boards: imported json file
 
     outputs:
     softmax likelihood of each possible clue in "candidates"
@@ -412,7 +413,7 @@ class RSA:
         speaker_rank.append(clue_rank)
     return speaker_prob, speaker_rank
 
-  def get_speaker_df(representations, combined_boards_df,params, candidates, vocab, cluedata, board_combos, target_df ):
+  def get_speaker_df(representations, combined_boards_df,params, candidates, vocab, cluedata, board_combos, target_df, boards ):
     '''
     returns a complete dataframe of pragmatic speaker ranks & probabilities over different representations 
     over a given set of candidates
@@ -426,6 +427,7 @@ class RSA:
     (6) cluedata: the empirical cluedata
     (7) board_combos: output of compute_board_combos
     (8) target_df: target_df with all the wordpairs for which values are needed
+    (9) boards: imported json file
 
     outputs:
     a dataframe with clue ranks & probs for each possible candidate & representation
