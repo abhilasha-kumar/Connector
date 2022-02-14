@@ -344,7 +344,7 @@ class RSA:
     board_combos = {board_name : RSA.compute_board_combos(board_name,boards) for board_name in boards.keys()}
 
     board_matrices = {
-      key : {board_name : RSA.create_board_matrix(board_combos[board_name], boards[board_name], embedding, vocab) 
+      key : {board_name : RSA.create_board_matrix(board_combos[board_name], boards[board_name], representations, embedding, vocab) 
             for board_name in boards.keys()}
       for (key, embedding) in representations.items()
     }
