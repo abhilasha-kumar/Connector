@@ -410,7 +410,7 @@ class RSA:
 
         speaker_prob.append(clue_probs)
         speaker_rank.append(clue_rank)
-      return speaker_prob, speaker_rank
+    return speaker_prob, speaker_rank
 
   def get_speaker_df(representations, combined_boards_df,params, candidates, vocab, cluedata ):
     '''
