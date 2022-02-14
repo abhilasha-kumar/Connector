@@ -452,8 +452,10 @@ class nonRSA:
       for alpha in np.arange(0,1.1, 0.1):
         ## for a given alpha, compute the clue similarities at the board level 
         beta = optimal_params[modelname][0]
+        print(f"for {modelname} and alpha {alpha}")
+        
         speaker_board_probs = {
-            board_name : nonRSA.speaker_targetboard(board_name, alpha, beta, candidates, representations, modelname, vocab, target_df)
+            board_name : search_funcs.nonRSA.speaker_targetboard(boards[board_name], alpha, beta, candidates, representations, modelname, vocab, target_df)
             for board_name in boards.keys()
         }   
         
@@ -467,9 +469,9 @@ class nonRSA:
           #print(target_main)
 
           for index, row in clue_main.iterrows():
-            if row["Clue1"] in list(sample_df["Word"]):
+            if row["Clue1"] in list(vocab["vocab_word"]):
               #print("clue is:", row["Clue1"])
-              clue_index = list(sample_df["Word"]).index(row["Clue1"])
+              clue_index = list(vocab["vocab_word"]).index(row["Clue1"])
               #print("clue_index:",clue_index)
               wordpair = row["wordpair"]
               ## need to figure out specific wordpair this clue corresponds to
