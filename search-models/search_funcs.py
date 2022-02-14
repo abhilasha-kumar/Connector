@@ -370,10 +370,43 @@ class RSA:
 
     '''
     candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
-    literal_guesser_prob = np.log(RSA.literal_guesser(board_name, representations[modelname], candidates, vocab, boards))
+    literal_guesser_prob = np.log(RSA.literal_guesser(board_name, representations, modelname, candidates, vocab, boards))
     clues_cost = -np.array([list(vocab["LgSUBTLWF"])[i] for i in candidate_index])
     utility = (1-costweight) * literal_guesser_prob - costweight * clues_cost
     return softmax(beta * utility, axis = 1)
+  
+  def get_speaker_scores(cluedata, speaker_word_pairs, probsarray, probsarray_sorted, candidate_df) :
+    '''
+    takes a set of clues and word pairs, and computes the probability and rank of each clue
+    inputs:
+    (1) cluedata: a subset of expdata with relevant clues and wordpairs
+    (2) speaker_word_pairs: the specific wordpairs for which probabilities need to be computed
+    (3) probsarray: a 3 x candidates array of pragmatic speaker predictions
+    (4) probsarray_sorted: a sorted 3 x candidates array of pragmatic speaker predictions
+    (5) candidate_df: a vocab-like df of only candidates
+    '''
+    speaker_prob = []
+    speaker_rank = []
+    for index, row in cluedata.iterrows():
+        clue1 = row["Clue1"]
+        wordpair = str(row["wordpair"]).replace(" ", "")
+        wordpair_index = speaker_word_pairs.index(wordpair)
+        w1_index, w2_index = [list(vocab["vocab_word"]).index(word) for word in wordpair.split('-')]
+        
+        # find index of clue
+        if clue1 in list(vocab["vocab_word"]):
+            clue_index = list(vocab["vocab_word"]).index(clue1)
+            clue_probs = y[wordpair_index, clue_index]
+            clue_rank = np.nonzero(y_sorted==clue_index)[1][wordpair_index]
+        else:
+            clue_rank = "NA"
+            clue_probs = "NA"
+
+        speaker_prob.append(clue_probs)
+        speaker_rank.append(clue_rank)
+    return speaker_prob, speaker_rank
+
+
 
 class nonRSA:
   def speaker_targetboard(context_board, alpha, beta, candidates, representations, modelname, vocab, target_df):
