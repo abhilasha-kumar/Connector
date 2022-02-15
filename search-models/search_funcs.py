@@ -434,33 +434,34 @@ class RSA:
     '''
     speakerprobs_df = pd.DataFrame()
     for modelname in representations.keys() :
-         optimal_params = params[modelname]
-         print("optimal_params =", optimal_params)
 
-        for index, row in combined_boards_df.iterrows():
-            board = row["boardwords"]
-            boardname = row["boardnames"]
-            wordpairlist = RSA.get_wordpair_list(board_combos, boardname)
-            speaker_word_pairs = target_df[(target_df["boardnames"] == row["boardnames"]) & 
-                                          (target_df["Experiment"] == row["Experiment"])]["wordpair"]
-            speaker_word_pairs = list(speaker_word_pairs)
-            speaker_df_new = pd.DataFrame({'wordpair': speaker_word_pairs})
-            speaker_model = RSA.pragmatic_speaker(boardname, optimal_params[0], optimal_params[1],representations, modelname, candidates, vocab, boards)
-            ## this is created at the BOARD level
-            y = np.array([speaker_model[wordpairlist.index(wordpair)] for wordpair in speaker_word_pairs])
-            y_sorted = np.argsort(-y)
+      optimal_params = params[modelname]
+      print("optimal_params =", optimal_params)
 
-            ## so y has 3 vectors of clue probabilities (the 3 pairs on this board)
-            ## now we need to go into cluedata and score the probabilities for those specific clues
-            expdata_board = cluedata[(cluedata["Board"] == row["Board"]) & (cluedata["Experiment"] == row["Experiment"]) & (cluedata["Clue1"].isin(candidates))]
+      for index, row in combined_boards_df.iterrows():
+        board = row["boardwords"]
+        boardname = row["boardnames"]
+        wordpairlist = RSA.get_wordpair_list(board_combos, boardname)
+        speaker_word_pairs = target_df[(target_df["boardnames"] == row["boardnames"]) & 
+                                      (target_df["Experiment"] == row["Experiment"])]["wordpair"]
+        speaker_word_pairs = list(speaker_word_pairs)
+        speaker_df_new = pd.DataFrame({'wordpair': speaker_word_pairs})
+        speaker_model = RSA.pragmatic_speaker(boardname, optimal_params[0], optimal_params[1],representations, modelname, candidates, vocab, boards)
+        ## this is created at the BOARD level
+        y = np.array([speaker_model[wordpairlist.index(wordpair)] for wordpair in speaker_word_pairs])
+        y_sorted = np.argsort(-y)
 
-            candidate_df = vocab[vocab["vocab_word"].isin(candidates)].reset_index()
+        ## so y has 3 vectors of clue probabilities (the 3 pairs on this board)
+        ## now we need to go into cluedata and score the probabilities for those specific clues
+        expdata_board = cluedata[(cluedata["Board"] == row["Board"]) & (cluedata["Experiment"] == row["Experiment"]) & (cluedata["Clue1"].isin(candidates))]
 
-            speaker_prob, speaker_rank = RSA.get_speaker_scores(expdata_board, speaker_word_pairs, y, y_sorted, candidate_df)
-            expdata_board.loc[:,"representation"] = modelname
-            expdata_board.loc[:,"prag_speaker_probs"] = speaker_prob
-            expdata_board.loc[:,"prag_speaker_rank"] = speaker_rank
-            speakerprobs_df = pd.concat([speakerprobs_df, expdata_board])
+        candidate_df = vocab[vocab["vocab_word"].isin(candidates)].reset_index()
+
+        speaker_prob, speaker_rank = RSA.get_speaker_scores(expdata_board, speaker_word_pairs, y, y_sorted, candidate_df)
+        expdata_board.loc[:,"representation"] = modelname
+        expdata_board.loc[:,"prag_speaker_probs"] = speaker_prob
+        expdata_board.loc[:,"prag_speaker_rank"] = speaker_rank
+        speakerprobs_df = pd.concat([speakerprobs_df, expdata_board])
 
     return speakerprobs_df
 
