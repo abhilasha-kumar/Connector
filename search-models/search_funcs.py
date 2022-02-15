@@ -434,6 +434,9 @@ class RSA:
     '''
     speakerprobs_df = pd.DataFrame()
     for modelname in representations.keys() :
+         optimal_params = params[modelname]
+         print("optimal_params =", optimal_params)
+
         for index, row in combined_boards_df.iterrows():
             board = row["boardwords"]
             boardname = row["boardnames"]
@@ -442,8 +445,7 @@ class RSA:
                                           (target_df["Experiment"] == row["Experiment"])]["wordpair"]
             speaker_word_pairs = list(speaker_word_pairs)
             speaker_df_new = pd.DataFrame({'wordpair': speaker_word_pairs})
-            params = params[modelname]
-            speaker_model = RSA.pragmatic_speaker(boardname, params[0], params[1],representations, modelname, candidates, vocab, boards)
+            speaker_model = RSA.pragmatic_speaker(boardname, optimal_params[0], optimal_params[1],representations, modelname, candidates, vocab, boards)
             ## this is created at the BOARD level
             y = np.array([speaker_model[wordpairlist.index(wordpair)] for wordpair in speaker_word_pairs])
             y_sorted = np.argsort(-y)
