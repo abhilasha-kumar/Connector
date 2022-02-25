@@ -380,6 +380,9 @@ class RSA:
     utility = (1-costweight) * literal_guesser_prob - costweight * clues_cost
     return softmax(beta * utility, axis = 1)
   
+  def pragmatic_guesser(board_name, beta, costweight, representations,modelname,candidates, vocab, boards):
+    return softmax(np.log(RSA.pragmatic_speaker(board_name, beta, costweight, representations, modelname, candidates, vocab, boards)), axis = 0)
+  
   def get_speaker_scores(cluedata, speaker_word_pairs, probsarray, probsarray_sorted, candidate_df) :
     '''
     takes a set of clues and word pairs, and computes the probability and rank of each clue
@@ -464,6 +467,9 @@ class RSA:
         speakerprobs_df = pd.concat([speakerprobs_df, expdata_board])
 
     return speakerprobs_df
+  
+  
+
 
 
 
