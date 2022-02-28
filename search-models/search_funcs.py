@@ -468,12 +468,41 @@ class RSA:
 
     return speakerprobs_df
   
-  
-
-
-
-
 class nonRSA:
+  def get_distinctiveness(context_board, alpha, candidates, representations, modelname, vocab, target_df):
+    '''
+    takes in a given board, target wordpairs, and a set of clue candidates, and returns the distinctivess
+    based on alpha(clue-w1*clue-w2) - (1-alpha)*(average of all other words on board)
+    '''
+
+    # grab subset of words in given board and their corresponding glove vectors
+    board_df = vocab[vocab['vocab_word'].isin(context_board)]
+    board_word_indices = list(board_df.index)
+    board_vectors = representations[modelname][board_word_indices]
+
+    ## clue_sims is the similarity of ALL clues in full searchspace (size N) to EACH word on board (size 20)
+    
+    ### NEED TO FIX THIS TO ONLY CONSIDER CANDIDATES!!
+    candidate_index = [list(vocab["vocab_word"]).index(w) for w in candidates]
+    candidate_embeddings = representations[modelname][candidate_index]
+
+    clue_sims = (1-scipy.spatial.distance.cdist(board_vectors, candidate_embeddings, 'cosine') + 1 ) / 2
+    target_sample = target_df[target_df['Word1'].isin(board_df["vocab_word"]) & target_df['Word2'].isin(board_df["vocab_word"])]
+    w1_index = [list(board_df["vocab_word"]).index(row["Word1"]) for index, row in target_sample.iterrows()]
+    w2_index = [list(board_df["vocab_word"]).index(row["Word2"]) for index, row in target_sample.iterrows()]
+    clue_w1 = clue_sims[w1_index]
+    clue_w2 = clue_sims[w2_index]
+    clue_prod = np.multiply(clue_w1,clue_w2)
+
+    # deleting the two target words to compute average similarity to other words on the board
+    clue_sims_new = np.array([np.delete(clue_sims, [w1_index[i], w2_index[i]], axis=0) for i in range(len(w1_index))])
+    avg_sim = np.mean(clue_sims_new, axis=1)
+
+    ## FUNC = alpha(clue_w1*clue_w2) - (1-alpha)*(average of other board words)
+
+    func = np.subtract((alpha)*clue_prod, (1-alpha)*avg_sim)
+    return func
+
   def speaker_targetboard(context_board, alpha, beta, candidates, representations, modelname, vocab, target_df):
     '''
     takes in a given board, wordpairs, and a set of possible candidates, and returns the likelihood of 
