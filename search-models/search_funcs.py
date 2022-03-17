@@ -97,6 +97,10 @@ class search:
  
     p = int(math.log(n, 2))
     return p
+  
+  def returnpowersof2(n):
+    return [1 << i for i in range(n)]
+  
 
   def union_intersection(w1, w2, n_walks, vocabulary, Graph):
     '''
@@ -123,7 +127,8 @@ class search:
 
     # we compute the candidates for all powers of 2 less than n to get "steps" at which walk is truncated
 
-    n_steps = search.highestPowerof2(len(vocabulary))
+    n = search.highestPowerof2(len(vocabulary))
+    n_steps = search.returnpowersof2(n)
 
     for i in n_steps:
 
