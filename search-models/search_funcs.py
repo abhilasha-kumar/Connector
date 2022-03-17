@@ -25,6 +25,7 @@ import sys
 import scipy.spatial.distance
 from scipy.special import softmax
 import walker
+import math
 
 class search:
   def create_similarity_matrix(matrix):
@@ -89,19 +90,26 @@ class search:
     # [list(vocab.vocab_word)[i] for i in words]
     return ordervisited_arr
 
-  def union_intersection(w1, w2, n_steps, n_walks, vocabulary, Graph):
+  def highestPowerof2(n):
+    '''
+    returns the highest power of 2 less than or equal to n
+    '''
+ 
+    p = int(math.log(n, 2))
+    return p
+
+  def union_intersection(w1, w2, n_walks, vocabulary, Graph):
     '''
     computes the union & intersection of n_walks random walks of n_steps from w1 and w2
 
     inputs:
     (1) w1 & w2: the two words for which random walks will be initiated
-    (2) n_steps: number of steps to consider returning data for 
-    (3) vocabulary: the vocab from which w1 & w2 are selected
-    (4) Graph: the underlying graph for random walk
+    (2) vocabulary: the vocab from which w1 & w2 are selected
+    (3) Graph: the underlying graph for random walk
 
 
     outputs:
-    (1) union_list: contains the words visited by EITHER words in descending order of times visited across n_steps
+    (1) union_list: contains the words visited by EITHER words in descending order of times visited
     (2) intersection_list: contains the words visited by BOTH words in descending order of times visited acr
 
     '''
@@ -110,13 +118,14 @@ class search:
     rw_w1 = search.random_walk(w1, len(vocabulary), n_walks, vocabulary, Graph)
     rw_w2 = search.random_walk(w2, len(vocabulary), n_walks, vocabulary, Graph)
 
-    # we need another parameter that controls the length of the walk to take into account :n_steps
-    # maybe we calculate union/intersection for ALL n-step walks?
-
     union_list = pd.DataFrame()
     intersection_list = pd.DataFrame()
 
-    for i in range(n_steps):
+    # we compute the candidates for all powers of 2 less than n to get "steps" at which walk is truncated
+
+    n_steps = search.highestPowerof2(len(vocabulary))
+
+    for i in n_steps:
 
       # count the number of times a node was visited in i steps
       w1_main = np.sum(rw_w1[:,:i], axis = 1).tolist()
@@ -135,9 +144,9 @@ class search:
       intersection = set(nonzero_w1).intersection(set(nonzero_w2))
       ## we also need the counts of these visited nodes, sorted by nodes visited highly by both words
       union_df = v.loc[v['vocab_word'].isin(list(union))].sort_values(by='w1*w2', ascending=False)
-      union_df["n_steps"] = i+1
+      union_df["n_steps"] = i
       intersection_df = v.loc[v['vocab_word'].isin(list(intersection))].sort_values(by='w1*w2', ascending=False)
-      intersection_df["n_steps"] = i+1
+      intersection_df["n_steps"] = i
 
       union_list =  pd.concat([union_list, union_df])
       intersection_list = pd.concat([intersection_list, intersection_df])
