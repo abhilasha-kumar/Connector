@@ -100,6 +100,84 @@ class search:
   
   def returnpowersof2(n):
     return [1 << i for i in range(n)]
+
+  def union_intersection_nwalks(w1, w2, walkmax, vocabulary, Graph):
+    '''
+    computes the union & intersection of n_walks random walks of n_steps from w1 and w2
+
+    inputs:
+    (1) w1 & w2: the two words for which random walks will be initiated
+    (2) vocabulary: the vocab from which w1 & w2 are selected
+    (3) Graph: the underlying graph for random walk
+
+
+    outputs:
+    (1) union_list: contains the words visited by EITHER words in descending order of times visited
+    (2) intersection_list: contains the words visited by BOTH words in descending order of times visited acr
+
+    '''
+
+    w1_index = list(vocabulary.vocab_word).index(w1)
+    w2_index = list(vocabulary.vocab_word).index(w2)
+
+    # starts walkmax independent random walks of size vocab
+    rw_w1 = walker.random_walks(Graph, n_walks=walkmax, walk_len=len(vocabulary),start_nodes=[w1_index])
+    rw_w2 = walker.random_walks(Graph, n_walks=walkmax, walk_len=len(vocabulary),start_nodes=[w2_index])
+
+    union_list = pd.DataFrame()
+    intersection_list = pd.DataFrame()
+
+    # we compute the candidates for all powers of 2 less than n to get "steps" at which walk is truncated
+
+    n = search.highestPowerof2(len(vocabulary))
+    n_steps = search.returnpowersof2(n)
+
+    for i in n_steps:
+      # get a random number of i walks from the rw output for w1 and w2
+      w1_random = rw_w1[np.random.choice(rw_w1.shape[0], i, replace=False), :]
+      w2_random = rw_w2[np.random.choice(rw_w2.shape[0], i, replace=False), :]
+
+      # get order of visits 
+
+      df1 = pd.DataFrame(w1_random)
+      X = df1.apply(pd.Series.value_counts).fillna(0)
+      ordervisited_arr_1 = pd.DataFrame(np.zeros((len(vocabulary), w1_random.shape[1]))) # 2d array N x n_steps
+      ordervisited_arr_1 = X.combine_first(ordervisited_arr_1).values
+
+      df2 = pd.DataFrame(w2_random)
+      X = df2.apply(pd.Series.value_counts).fillna(0)
+      ordervisited_arr_2 = pd.DataFrame(np.zeros((len(vocabulary), w2_random.shape[1]))) # 2d array N x n_steps
+      ordervisited_arr_2 = X.combine_first(ordervisited_arr_2).values
+
+      # once we have the order of visits for "i" walks, we now look at upto n steps within i walks
+      for j in n_steps:
+        # count the number of times a node was visited in j steps
+        w1_main = np.sum(ordervisited_arr_1[:,:j], axis = 1).tolist()
+        w2_main = np.sum(ordervisited_arr_2[:,:j], axis = 1).tolist()
+        v = vocabulary.copy()
+        v["w1_visited_count"] = w1_main
+        v["w2_visited_count"] = w2_main
+        v["w1*w2"] = v["w1_visited_count"]*v["w2_visited_count"]
+
+        ## compute non-zero, i.e., all visited nodes 
+        nonzero_w1 = list(v.loc[v['w1_visited_count'] != 0].vocab_word)
+        nonzero_w2 = list(v.loc[v['w2_visited_count'] != 0].vocab_word)
+
+        ## compute union and intersection
+        union = set(nonzero_w1).union(set(nonzero_w2))
+        intersection = set(nonzero_w1).intersection(set(nonzero_w2))
+        ## we also need the counts of these visited nodes, sorted by nodes visited highly by both words
+        union_df = v.loc[v['vocab_word'].isin(list(union))].sort_values(by='w1*w2', ascending=False)
+        union_df["n_steps"] = j
+        union_df["n_walks"] = i
+        intersection_df = v.loc[v['vocab_word'].isin(list(intersection))].sort_values(by='w1*w2', ascending=False)
+        intersection_df["n_steps"] = j
+        intersection_df["n_walks"] = i
+
+        union_list =  pd.concat([union_list, union_df])
+        intersection_list = pd.concat([intersection_list, intersection_df])
+
+    return union_list, intersection_list
   
 
   def union_intersection(w1, w2, n_walks, vocabulary, Graph):
