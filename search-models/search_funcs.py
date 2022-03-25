@@ -99,7 +99,7 @@ class search:
     return p
   
   def returnpowersof2(n):
-    return [1 << i for i in range(n)]
+    return [1 << i for i in range(n+1)]
 
   def union_intersection_nwalks(w1, w2, walkmax, vocabulary, Graph):
     '''
